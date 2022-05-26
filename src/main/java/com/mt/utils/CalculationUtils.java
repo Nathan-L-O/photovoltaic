@@ -43,7 +43,7 @@ public class CalculationUtils {
                             (Double.parseDouble(inverter.getInverter_lower_limit())-2.8*moduleType.getName()*(battery.getPractical_battery_number()-battery.getBracket_number()/battery.getBracket_number()))));
                 }
 
-                if (3.55*moduleType.getName()*(battery.getPractical_battery_number()-battery.getBracket_number()/battery.getBracket_number()) > Double.parseDouble(inverter.getInverter_up_limit())){
+                if (3.55*moduleType.getName()*(battery.getPractical_battery_number()-battery.getBracket_number()/battery.getBracket_number()) > Double.parseDouble(inverter.getInverter_up_limit()) + 5){
                     battery.setEconomic_errmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
                             (3.55*moduleType.getName()*(battery.getPractical_battery_number()-battery.getBracket_number()/battery.getBracket_number())-Double.parseDouble(inverter.getInverter_up_limit()))));
                 }
@@ -52,7 +52,7 @@ public class CalculationUtils {
                     battery.setPractical_errmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
                             (Double.parseDouble(inverter.getInverter_lower_limit())-lowerLimit)));
                 }
-                if (outputLimit>Double.parseDouble(inverter.getInverter_up_limit())){
+                if (outputLimit>Double.parseDouble(inverter.getInverter_up_limit()) + 5){
                     battery.setPractical_errmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
                             (outputLimit-Double.parseDouble(inverter.getInverter_up_limit()))));
                 }
@@ -65,7 +65,7 @@ public class CalculationUtils {
                 battery.setEconomic_errmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
                         (Double.parseDouble(inverter.getInverter_lower_limit())-Economic_lowerLimit)));
             }
-            if (Economic_outputLimit>Double.parseDouble(inverter.getInverter_up_limit())){
+            if (Economic_outputLimit>Double.parseDouble(inverter.getInverter_up_limit()) + 5){
                 battery.setEconomic_errmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
                         (Economic_outputLimit-Double.parseDouble(inverter.getInverter_up_limit()))));
             }
@@ -77,7 +77,7 @@ public class CalculationUtils {
                     battery.setPractical_errmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
                             (Double.parseDouble(inverter.getInverter_lower_limit())-lowerLimit)));
                 }
-                if (outputLimit>Double.parseDouble(inverter.getInverter_up_limit())){
+                if (outputLimit>Double.parseDouble(inverter.getInverter_up_limit()) + 5){
                     battery.setPractical_errmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
                             (outputLimit-Double.parseDouble(inverter.getInverter_up_limit()))));
                 }
