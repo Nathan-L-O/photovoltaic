@@ -2,6 +2,11 @@ package com.mt.utils;
 
 import com.mt.pojo.Inverter;
 import com.mt.vo.Battery;
+import io.swagger.models.auth.In;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class CalculationUtils {
     //模组电量
@@ -10,80 +15,90 @@ public class CalculationUtils {
     /**
      * 判断是否合理 如果合理计算出发电量
      * @param inverter 逆变器
-     * @param capacity 输入的电量
+     * @param capacity 需求发电量
+     * @param inverter_num 逆变器数量
      * @return
      */
-    public static Battery getGeneratingCapacity(Inverter inverter, String capacity){
+    public static Map<String,Object> getGeneratingCapacity(Inverter inverter, String capacity,Integer inverter_num){
+        Map<String,Object> map = new LinkedHashMap<>();
+        //电池数量
         Double d = Double.parseDouble(capacity)/module_power;
         //判断模组类型
         ModuleType moduleType;
-        int moduleTypeSize = Integer.parseInt(capacity) / Integer.parseInt(inverter.getInverter_output_power());
+        int moduleTypeSize = Integer.parseInt(capacity) / (Integer.parseInt(inverter.getInverter_output_power())*inverter_num);
         if (moduleTypeSize>=2){
             moduleType = ModuleType.MODULE_TYPE_0_5C;
         }else {
             moduleType = ModuleType.MODULE_TYPE_1C;
         }
         //电池数量以及支架数量
-        Battery battery = getBatteryNumber(moduleType,d);
+        map = getBatteryNumber(moduleType,d);
+        map.put("inverter_output_power", (Integer.parseInt(inverter.getInverter_output_power())*inverter_num));
+        Battery practical = (Battery) map.get("practical");
+        Battery economic = (Battery) map.get("economic");
 
-        if (battery.getEconomic_battery_number()==null && battery.getEconomic_capacity()==null){
+        if (economic.getBattery_number()==null && economic.getCapacity()==null){
             //比较上下限
-            Double lowerLimit = 2.8*moduleType.getName()*(battery.getPractical_battery_number()/battery.getBracket_number());
-            Double outputLimit = 3.55*moduleType.getName()*(battery.getPractical_battery_number()/battery.getBracket_number());
+            Double lowerLimit = 2.8*moduleType.getName()*(practical.getBattery_number()/practical.getBracket_number());
+            Double outputLimit = 3.55*moduleType.getName()*(practical.getBattery_number()/practical.getBracket_number());
 
-            Double practical_capacity = module_power*battery.getPractical_battery_number();
-            battery.setPractical_capacity(practical_capacity);
+            Double practical_capacity = module_power*practical.getBattery_number();
+            practical.setCapacity(practical_capacity);
             //如果得出的发电量大于预期发电量 每个支架减少一个电池得出经济方案
             if (practical_capacity>Double.parseDouble(capacity)){
-                battery.setEconomic_battery_number(battery.getPractical_battery_number()-battery.getBracket_number());
-                battery.setEconomic_capacity(battery.getEconomic_battery_number()*module_power);
+                economic.setBattery_number(practical.getBattery_number()-practical.getBracket_number());
+                economic.setCapacity(economic.getBattery_number()*module_power);
 
-                if (2.8*moduleType.getName()*(battery.getPractical_battery_number()-battery.getBracket_number()/battery.getBracket_number()) < Double.parseDouble(inverter.getInverter_lower_limit())){
-                    battery.setEconomic_errmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
-                            (Double.parseDouble(inverter.getInverter_lower_limit())-2.8*moduleType.getName()*(battery.getPractical_battery_number()-battery.getBracket_number()/battery.getBracket_number()))));
+                if (2.8*moduleType.getName()*(practical.getBattery_number()-practical.getBracket_number()/practical.getBracket_number()) < Double.parseDouble(inverter.getInverter_lower_limit())){
+                    economic.setErrmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
+                            (Double.parseDouble(inverter.getInverter_lower_limit())-2.8*moduleType.getName()*(practical.getBattery_number()-practical.getBracket_number()/practical.getBracket_number()))));
                 }
 
-                if (3.55*moduleType.getName()*(battery.getPractical_battery_number()-battery.getBracket_number()/battery.getBracket_number()) > Double.parseDouble(inverter.getInverter_up_limit()) + 5){
-                    battery.setEconomic_errmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
-                            (3.55*moduleType.getName()*(battery.getPractical_battery_number()-battery.getBracket_number()/battery.getBracket_number())-Double.parseDouble(inverter.getInverter_up_limit()))));
+                if (3.55*moduleType.getName()*(practical.getBattery_number()-practical.getBracket_number()/practical.getBracket_number()) > Double.parseDouble(inverter.getInverter_up_limit()) + 5){
+                    economic.setErrmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
+                            (3.55*moduleType.getName()*(practical.getBattery_number()-practical.getBracket_number()/practical.getBracket_number())-Double.parseDouble(inverter.getInverter_up_limit()))));
                 }
             }else {
                 if (lowerLimit<Double.parseDouble(inverter.getInverter_lower_limit())){
-                    battery.setPractical_errmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
+                    practical.setErrmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
                             (Double.parseDouble(inverter.getInverter_lower_limit())-lowerLimit)));
                 }
                 if (outputLimit>Double.parseDouble(inverter.getInverter_up_limit()) + 5){
-                    battery.setPractical_errmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
+                    practical.setErrmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
                             (outputLimit-Double.parseDouble(inverter.getInverter_up_limit()))));
                 }
             }
         }else {
-            Double Economic_lowerLimit = 2.8*moduleType.getName()*(battery.getEconomic_battery_number()/battery.getBracket_number());
-            Double Economic_outputLimit = 3.55*moduleType.getName()*(battery.getEconomic_battery_number()/battery.getBracket_number());
+            Double Economic_lowerLimit = 2.8*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number());
+            Double Economic_outputLimit = 3.55*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number());
 
             if (Economic_lowerLimit<Double.parseDouble(inverter.getInverter_lower_limit())){
-                battery.setEconomic_errmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
+                economic.setErrmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
                         (Double.parseDouble(inverter.getInverter_lower_limit())-Economic_lowerLimit)));
             }
             if (Economic_outputLimit>Double.parseDouble(inverter.getInverter_up_limit()) + 5){
-                battery.setEconomic_errmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
+                economic.setErrmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
                         (Economic_outputLimit-Double.parseDouble(inverter.getInverter_up_limit()))));
             }
-            if (battery.getPractical_battery_number() != null && battery.getPractical_capacity() != null){
-                Double lowerLimit = 2.8*moduleType.getName()*(battery.getPractical_battery_number()/battery.getBracket_number());
-                Double outputLimit = 3.55*moduleType.getName()*(battery.getPractical_battery_number()/battery.getBracket_number());
+            if (practical.getBattery_number() != null && practical.getCapacity() != null){
+                Double lowerLimit = 2.8*moduleType.getName()*(practical.getBattery_number()/practical.getBracket_number());
+                Double outputLimit = 3.55*moduleType.getName()*(practical.getBattery_number()/practical.getBracket_number());
 
                 if (lowerLimit<Double.parseDouble(inverter.getInverter_lower_limit())){
-                    battery.setPractical_errmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
+                    practical.setErrmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
                             (Double.parseDouble(inverter.getInverter_lower_limit())-lowerLimit)));
                 }
                 if (outputLimit>Double.parseDouble(inverter.getInverter_up_limit()) + 5){
-                    battery.setPractical_errmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
+                    practical.setErrmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
                             (outputLimit-Double.parseDouble(inverter.getInverter_up_limit()))));
                 }
             }
         }
-        return battery;
+
+        map.put("practical",practical);
+        map.put("economic",economic);
+        map.put("inverter_number",inverter_num);
+        return map;
     }
 
     //取上一个偶数
@@ -113,8 +128,10 @@ public class CalculationUtils {
      * @param number 电池个数
      * @return
      */
-    private static Battery getBatteryNumber(ModuleType moduleType,Double number){
-        Battery battery = new Battery();
+    private static Map<String,Object> getBatteryNumber(ModuleType moduleType,Double number){
+        Map<String,Object> map = new LinkedHashMap<>();
+        Battery practical = new Battery();
+        Battery economic = new Battery();
         Integer previous = null;
         Integer next = null;
 
@@ -157,40 +174,44 @@ public class CalculationUtils {
 
             //支架数为1的情况
             if (ceil_previous_bracketNumber == 1 && ceil_next_bracketNumber == 1){
-                battery.setBracket_number(1);
-                battery.setPractical_battery_number(next);
-                battery.setEconomic_battery_number(previous);
-                battery.setPractical_capacity(module_power * battery.getPractical_battery_number());
-                battery.setEconomic_capacity(module_power * battery.getEconomic_battery_number());
-            }else
+                practical.setBracket_number(1);
+                economic.setBracket_number(1);
+                practical.setBattery_number(next);
+                economic.setBattery_number(previous);
+                practical.setCapacity(module_power * practical.getBattery_number());
+                economic.setCapacity(module_power * economic.getBattery_number());
+            }else if (0.0 == Double.valueOf(previous)%ceil_previous_bracketNumber){
                 //如果电池除以支架除的尽的情况
-                if (0.0 == Double.valueOf(previous)%ceil_previous_bracketNumber){
-                battery.setBracket_number(ceil_previous_bracketNumber.intValue());
-                battery.setPractical_battery_number(previous);
+                practical.setBracket_number(ceil_previous_bracketNumber.intValue());
+                practical.setBattery_number(previous);
             }else if (0.0 == Double.valueOf(next)%ceil_next_bracketNumber){
-                battery.setBracket_number(ceil_next_bracketNumber.intValue());
-                battery.setPractical_battery_number(next);
+                //如果电池除以支架除的尽的情况
+                practical.setBracket_number(ceil_next_bracketNumber.intValue());
+                practical.setBattery_number(next);
             }else {
                 //电池数除以支架数除不尽的情况
-                battery.setBracket_number(new Double(Math.max(ceil_previous_bracketNumber,ceil_next_bracketNumber)).intValue());
-                double previous_batteryNumber_forEveryBracket = Double.valueOf(previous) / battery.getBracket_number();
-                double next_batteryNumber_forEveryBracket = Double.valueOf(next) / battery.getBracket_number();
+                double bracket_number = Math.max(ceil_previous_bracketNumber,ceil_next_bracketNumber);
+                practical.setBracket_number((int) bracket_number);
+                economic.setBracket_number((int) bracket_number);
+                double previous_batteryNumber_forEveryBracket = Double.valueOf(previous) / bracket_number;
+                double next_batteryNumber_forEveryBracket = Double.valueOf(next) / bracket_number;
                 if (Math.floor(previous_batteryNumber_forEveryBracket) == Math.floor(next_batteryNumber_forEveryBracket)){
-                    battery.setEconomic_battery_number(new Double(Math.floor(previous_batteryNumber_forEveryBracket)).intValue() * battery.getBracket_number());
-                    battery.setEconomic_capacity(module_power * battery.getEconomic_battery_number());
-                    battery.setPractical_battery_number(new Double(Math.ceil(next_batteryNumber_forEveryBracket)).intValue() * battery.getBracket_number());
-                    battery.setPractical_capacity(module_power * battery.getPractical_battery_number());
+                    economic.setBattery_number(new Double(Math.floor(previous_batteryNumber_forEveryBracket)).intValue() * (int) bracket_number);
+                    economic.setCapacity(module_power * economic.getBattery_number());
+                    practical.setBattery_number(new Double(Math.ceil(next_batteryNumber_forEveryBracket)).intValue() * (int) bracket_number);
+                    practical.setCapacity(module_power * practical.getBattery_number());
                 }else {
-                    battery.setEconomic_battery_number(new Double(Math.floor(previous_batteryNumber_forEveryBracket)).intValue() * battery.getBracket_number());
-                    battery.setEconomic_capacity(module_power * battery.getEconomic_battery_number());
-                    battery.setPractical_battery_number(new Double(Math.floor(next_batteryNumber_forEveryBracket)).intValue() * battery.getBracket_number());
-                    battery.setPractical_capacity(module_power * battery.getPractical_battery_number());
+                    economic.setBattery_number(new Double(Math.floor(previous_batteryNumber_forEveryBracket)).intValue() * (int) bracket_number);
+                    economic.setCapacity(module_power * economic.getBattery_number());
+                    practical.setBattery_number(new Double(Math.floor(next_batteryNumber_forEveryBracket)).intValue() * (int) bracket_number);
+                    practical.setCapacity(module_power * practical.getBattery_number());
                 }
             }
         }
+            map.put("practical",practical);
+            map.put("economic",economic);
 
-
-        return battery;
+        return map;
     }
 
     //电池数除以支架数除不尽的情况
@@ -205,7 +226,10 @@ public class CalculationUtils {
 //        }catch (Exception e){
 //            System.out.println(e.getMessage());
 //        }
-        Double d = 100.219132142143;
-        System.out.println(String.format("%.2f", d));
+        Map map = new LinkedHashMap();
+        map.put("1",1);
+        map.put("2",2);
+        map.put("2",3);
+        System.out.println(map);
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/inverter")
@@ -53,12 +54,13 @@ public class InverterController {
     //查看所有逆变器
     @ApiOperation(value="根据逆变器以及发电量获得预期")
     @RequestMapping(value = "getCapacity", method = RequestMethod.GET)
-    public Result<Battery> getCapacity(
+    public Result<Map<String,Object>> getCapacity(
             @ApiParam(value="逆变器id") Integer inverter_id,
-            @ApiParam(value="需求发电量") String capacity) {
+            @ApiParam(value="需求发电量") String capacity,
+            @ApiParam(value="逆变器数量") Integer inverter_num) {
         try{
             Inverter inverter = inverterMapper.selectById(inverter_id);
-            return Result.success(CalculationUtils.getGeneratingCapacity(inverter,capacity));
+            return Result.success(CalculationUtils.getGeneratingCapacity(inverter,capacity,inverter_num));
         }catch (Exception e){
             return Result.fail(e.getMessage());
         }
