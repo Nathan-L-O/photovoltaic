@@ -2,9 +2,7 @@ package com.mt.utils;
 
 import com.mt.pojo.Inverter;
 import com.mt.vo.Battery;
-import io.swagger.models.auth.In;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -48,15 +46,16 @@ public class CalculationUtils {
             if (practical_capacity>Double.parseDouble(capacity)){
                 economic.setBattery_number(practical.getBattery_number()-practical.getBracket_number());
                 economic.setCapacity(economic.getBattery_number()*module_power);
+                economic.setBracket_number(practical.getBracket_number());
 
-                if (2.8*moduleType.getName()*(practical.getBattery_number()-practical.getBracket_number()/practical.getBracket_number()) < Double.parseDouble(inverter.getInverter_lower_limit())){
+                if (2.8*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number()) < Double.parseDouble(inverter.getInverter_lower_limit())){
                     economic.setErrmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
-                            (Double.parseDouble(inverter.getInverter_lower_limit())-2.8*moduleType.getName()*(practical.getBattery_number()-practical.getBracket_number()/practical.getBracket_number()))));
+                            (Double.parseDouble(inverter.getInverter_lower_limit())-2.8*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number()))));
                 }
 
-                if (3.55*moduleType.getName()*(practical.getBattery_number()-practical.getBracket_number()/practical.getBracket_number()) > Double.parseDouble(inverter.getInverter_up_limit()) + 5){
+                if (3.55*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number()) > Double.parseDouble(inverter.getInverter_up_limit()) + 5){
                     economic.setErrmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
-                            (3.55*moduleType.getName()*(practical.getBattery_number()-practical.getBracket_number()/practical.getBracket_number())-Double.parseDouble(inverter.getInverter_up_limit()))));
+                            (3.55*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number())-Double.parseDouble(inverter.getInverter_up_limit()))));
                 }
             }else {
                 if (lowerLimit<Double.parseDouble(inverter.getInverter_lower_limit())){
@@ -93,6 +92,9 @@ public class CalculationUtils {
                             (outputLimit-Double.parseDouble(inverter.getInverter_up_limit()))));
                 }
             }
+        }
+        if (Integer.parseInt(inverter.getInverter_output_power())>= 500){
+            map.put("隔离变压器",1);
         }
 
         map.put("practical",practical);
