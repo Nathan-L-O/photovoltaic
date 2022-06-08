@@ -1,0 +1,29 @@
+{
+  "properties": [
+    {
+      "name": "mengtu.util.verificationcode.lifetime",
+      "type": "java.lang.Integer",
+      "description": "verification code lifetime."
+    },
+    {
+      "name": "mengtu.push.sms.token",
+      "type": "java.lang.String",
+      "description": "短信接口授权 token."
+    },
+    {
+      "name": "mengtu.obs.endpoint",
+      "type": "java.lang.String",
+      "description": "OBS Endpoint."
+    },
+    {
+      "name": "mengtu.obs.access_key_id",
+      "type": "java.lang.String",
+      "description": "OBS Access Key ID."
+    },
+    {
+      "name": "mengtu.obs.secret_access_key",
+      "type": "java.lang.String",
+      "description": "OBS Secret Access Key."
+    }
+  ]
+}

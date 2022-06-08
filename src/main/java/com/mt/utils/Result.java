@@ -65,4 +65,18 @@ public class Result<T> {
     public static <T> Result<T> fail(String msg) {
         return new Result<T>(false, 400, msg);
     }
+
+    /**
+     * 通用构建
+     *
+     * @param result
+     * @param code
+     * @param msg
+     * @return com.mt.utils.Result<T>
+     * @author 过昊天
+     * @version 1.0 @ 2022/6/7 09:11
+     */
+    public static <T> Result<T> build(boolean result, int code, String msg) {
+        return new Result<T>(result, code, msg);
+    }
 }
