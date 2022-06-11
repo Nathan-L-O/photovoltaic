@@ -1,3 +1,4 @@
+-- 逆变器
 CREATE TABLE `photovoltaic`.`inverter`  (
     `inverter_id` integer NOT NULL AUTO_INCREMENT,
     `inverter_name` varchar(255) NULL DEFAULT NULL,
@@ -9,6 +10,7 @@ CREATE TABLE `photovoltaic`.`inverter`  (
     PRIMARY KEY (`inverter_id`) USING BTREE
 )ENGINE = InnoDB CHARACTER SET = utf8 COLLATE =  utf8_general_ci ROW_FORMAT = Dynamic;
 
+-- 项目对于的方案
 CREATE TABLE `photovoltaic`.`form`  (
     `form_id` integer NOT NULL AUTO_INCREMENT,
     `form_json` longtext NULL,
@@ -20,6 +22,7 @@ CREATE TABLE `photovoltaic`.`form`  (
     PRIMARY KEY (`form_id`) USING BTREE
 )ENGINE = InnoDB CHARACTER SET = utf8 COLLATE =  utf8_general_ci ROW_FORMAT = Dynamic;
 
+-- 项目
 CREATE TABLE `photovoltaic`.`programme`  (
     `programme_id` integer NOT NULL AUTO_INCREMENT,
     `programme_name` varchar(255) NULL,
@@ -33,6 +36,7 @@ CREATE TABLE `photovoltaic`.`programme`  (
     PRIMARY KEY (`programme_id`)
 )ENGINE = InnoDB CHARACTER SET = utf8 COLLATE =  utf8_general_ci ROW_FORMAT = Dynamic;
 
+-- 电池
 CREATE TABLE `photovoltaic`.`battery`  (
     `battery_id` int(0) NOT NULL AUTO_INCREMENT,
     `battery_type` varchar(255) NULL COMMENT '电池分类',
