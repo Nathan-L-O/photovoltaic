@@ -1,10 +1,13 @@
 package com.mt.utils;
 
+import com.alibaba.fastjson.JSON;
+import com.mt.pojo.Form;
 import com.mt.pojo.Inverter;
-import com.mt.vo.Battery;
+import com.mt.vo.BatteryVo;
+import com.mt.vo.FormVo;
+import sun.text.resources.FormatData;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class CalculationUtils {
     //模组电量
@@ -17,7 +20,7 @@ public class CalculationUtils {
      * @param inverter_num 逆变器数量
      * @return
      */
-    public static Map<String,Object> getGeneratingCapacity(Inverter inverter, String capacity,Integer inverter_num){
+    public static Map<String,Form> getGeneratingCapacity(Inverter inverter, String capacity, Integer inverter_num){
         Map<String,Object> map = new LinkedHashMap<>();
         //电池数量
         Double d = Double.parseDouble(capacity)/module_power;
@@ -32,8 +35,8 @@ public class CalculationUtils {
         //电池数量以及支架数量
         map = getBatteryNumber(moduleType,d);
         map.put("inverter_output_power", (Integer.parseInt(inverter.getInverter_output_power())*inverter_num));
-        Battery practical = (Battery) map.get("practical");
-        Battery economic = (Battery) map.get("economic");
+        BatteryVo practical = (BatteryVo) map.get("practical");
+        BatteryVo economic = (BatteryVo) map.get("economic");
 
         if (economic.getBattery_number()==null && economic.getCapacity()==null){
             //比较上下限
@@ -99,8 +102,56 @@ public class CalculationUtils {
 
         map.put("practical",practical);
         map.put("economic",economic);
-        map.put("inverter_number",inverter_num);
-        return map;
+
+        Map<String,Form> forms = new LinkedHashMap();
+        if (practical.getCapacity() != null){
+            List<FormVo> formVo = new ArrayList<>();
+            double form_id = 1.0;
+            formVo.add(new FormVo(true,form_id,"逆变器"+inverter.getInverter_name(),inverter_num,"",null,null));
+            if (ModuleType.MODULE_TYPE_1C == moduleType){
+                formVo.add(new FormVo(true,++form_id,"电池模组 1C",practical.getBattery_number(),"",null,null));
+            }else {
+                formVo.add(new FormVo(true,++form_id,"电池模组 0.5C",practical.getBattery_number(),"",null,null));
+            }
+            formVo.add(new FormVo(true,++form_id,"支架",practical.getBracket_number(),"",null,null));
+            formVo.add(new FormVo(true,++form_id,"高压盒",practical.getBracket_number(),"",null,null));
+            formVo.add(new FormVo(true,++form_id,"汇流柜",practical.getBracket_number(),"",null,null));
+            if (null != map.get("隔离变压器")){
+                formVo.add(new FormVo(true,++form_id,"隔离变压器",1,"",null,null));
+            }
+            formVo.add(new FormVo(true,++form_id,"BMS操作系统",1,"",null,null));
+            formVo.add(new FormVo(false,++form_id,"10尺集装箱",1,"",null,null));
+            formVo.add(new FormVo(null,form_id+0.1,"空调系统",null,"",null,form_id));
+            formVo.add(new FormVo(null,form_id+0.2,"消费系统",null,"",null,form_id));
+            formVo.add(new FormVo(false,++form_id,"运输费用",null,"",null,null));
+            formVo.add(new FormVo(false,++form_id,"测试安装",null,"",null,null));
+            forms.put("practical", new Form(JSON.toJSONString(formVo),String.valueOf(practical.getCapacity()),capacity,practical.getErrmsg()));
+        }
+        if (economic.getCapacity() != null){
+            List<FormVo> formVo = new ArrayList<>();
+            double form_id = 1.0;
+            formVo.add(new FormVo(true,form_id,"逆变器"+inverter.getInverter_name(),inverter_num,"",null,null));
+            if (ModuleType.MODULE_TYPE_1C == moduleType){
+                formVo.add(new FormVo(true,++form_id,"电池模组 1C",economic.getBattery_number(),"",null,null));
+            }else {
+                formVo.add(new FormVo(true,++form_id,"电池模组 0.5C",economic.getBattery_number(),"",null,null));
+            }
+            formVo.add(new FormVo(true,++form_id,"支架",economic.getBracket_number(),"",null,null));
+            formVo.add(new FormVo(true,++form_id,"高压盒",economic.getBracket_number(),"",null,null));
+            formVo.add(new FormVo(true,++form_id,"汇流柜",economic.getBracket_number(),"",null,null));
+            if (null != map.get("隔离变压器")){
+                formVo.add(new FormVo(true,++form_id,"隔离变压器",1,"",null,null));
+            }
+            formVo.add(new FormVo(true,++form_id,"BMS操作系统",1,"",null,null));
+            formVo.add(new FormVo(false,++form_id,"10尺集装箱",1,"",null,null));
+            formVo.add(new FormVo(null,form_id+0.1,"空调系统",null,"",null,form_id));
+            formVo.add(new FormVo(null,form_id+0.2,"消费系统",null,"",null,form_id));
+            formVo.add(new FormVo(false,++form_id,"运输费用",null,"",null,null));
+            formVo.add(new FormVo(false,++form_id,"测试安装",null,"",null,null));
+            forms.put("economic", new Form(JSON.toJSONString(formVo),String.valueOf(economic.getCapacity()),capacity,economic.getErrmsg()));
+        }
+
+        return forms;
     }
 
     //取上一个偶数
@@ -132,8 +183,8 @@ public class CalculationUtils {
      */
     private static Map<String,Object> getBatteryNumber(ModuleType moduleType,Double number){
         Map<String,Object> map = new LinkedHashMap<>();
-        Battery practical = new Battery();
-        Battery economic = new Battery();
+        BatteryVo practical = new BatteryVo();
+        BatteryVo economic = new BatteryVo();
         Integer previous = null;
         Integer next = null;
 
@@ -216,22 +267,4 @@ public class CalculationUtils {
         return map;
     }
 
-    //电池数除以支架数除不尽的情况
-
-    public static void main(String[] args) {
-//        Inverter inverter = new Inverter();
-//        inverter.setInverter_output_power("250");
-//        inverter.setInverter_up_limit("850");
-//        inverter.setInverter_lower_limit("400");
-//        try{
-//            System.out.println(getGeneratingCapacity(inverter,"750"));
-//        }catch (Exception e){
-//            System.out.println(e.getMessage());
-//        }
-        Map map = new LinkedHashMap();
-        map.put("1",1);
-        map.put("2",2);
-        map.put("2",3);
-        System.out.println(map);
-    }
 }

@@ -3,7 +3,7 @@ package com.mt.utils;
 import io.swagger.models.auth.In;
 
 public enum ModuleType {
-     MODULE_TYPE_0_5C(12,19),
+    MODULE_TYPE_0_5C(12,19),
     MODULE_TYPE_1C(24, 10);
 
     //验证上下限公式中的值
