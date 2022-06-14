@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mt.mapper.FormMapper;
 import com.mt.mapper.InverterMapper;
+import com.mt.mapper.ProgrammeMapper;
 import com.mt.pojo.Form;
 import com.mt.pojo.Inverter;
+import com.mt.pojo.Programme;
 import com.mt.utils.CalculationUtils;
 import com.mt.utils.Result;
 import com.mt.vo.FormVo;
@@ -30,8 +32,10 @@ public class FormController {
 
     @Autowired
     private FormMapper formMapper;
+    @Autowired
+    private ProgrammeMapper programmeMapper;
 
-    @ApiOperation(value="根据id查询")
+    @ApiOperation(value="根据id查询  如果方案下有两个方案两个都返回")
     @RequestMapping(value = "selectById", method = RequestMethod.GET)
     public Result<Object> selectById(
             @ApiParam(value="方案id") Integer programme_id) {
@@ -52,4 +56,27 @@ public class FormController {
             return Result.fail(e.getMessage());
         }
     }
+
+    @ApiOperation(value="选择方案")
+    @RequestMapping(value = "choseForm", method = RequestMethod.POST)
+    public Result<Object> choseForm(
+            @ApiParam(value="方案id") Integer form_id) {
+        try {
+            Form form = formMapper.selectById(form_id);
+            if (form!= null){
+                form.setChose(true);
+                formMapper.updateById(form);
+                Programme programme = programmeMapper.selectById(form.getProgramme_id());
+                programme.setDemand_capacity(form.getDemand_capacity());
+                programme.setActual_capacity(form.getActual_capacity());
+                programmeMapper.updateById(programme);
+                return Result.success();
+            }
+            return null;
+        }catch (Exception e){
+            return Result.fail(e.getMessage());
+        }
+    }
+
+
 }

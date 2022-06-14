@@ -33,6 +33,10 @@ public class Programme {
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date update_date;
 
+    @ApiModelProperty(value="更新日期",name = "create_date")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private Date create_date;
+
     @ApiModelProperty(value="收藏（1收藏",name="isCollection")
     private Integer isCollection;
 
@@ -47,4 +51,14 @@ public class Programme {
 
     @ApiModelProperty(value="方案状态",name="programme_state")
     private String programme_state;
+
+    @ApiModelProperty(value="方案用途",name="programme_purpose")
+    private String programme_purpose;
+
+    @ApiModelProperty(value="逆变器id",name="inverter_id")
+    private String inverter_id;
+
+    @ApiModelProperty(value="逆变器数量",name="inverter_num")
+    private String inverter_num;
+
 }

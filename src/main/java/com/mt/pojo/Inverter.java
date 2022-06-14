@@ -34,7 +34,7 @@ public class Inverter {
     @ApiModelProperty(value="电压上限",name="inverter_up_limit")
     private String inverter_up_limit;
 
-    @ApiModelProperty(value="逆变器类型",name="inverter_up_limit")
+    @ApiModelProperty(value="逆变器类型",name="inverter_type")
     private String inverter_type;
 
 

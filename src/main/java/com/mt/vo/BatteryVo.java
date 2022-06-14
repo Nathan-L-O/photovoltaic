@@ -13,7 +13,7 @@ public class BatteryVo {
     private Integer battery_number;
     //发电量
     @ApiModelProperty(value="实际发电量")
-    private Double capacity;
+    private String capacity;
 
     @ApiModelProperty(value="错误原因")
     private String errmsg;

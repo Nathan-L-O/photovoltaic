@@ -28,11 +28,15 @@ CREATE TABLE `photovoltaic`.`programme`  (
     `programme_name` varchar(255) NULL,
     `user_id` varchar(255) NULL,
     `update_date` datetime NULL,
+    `create_date` datetime NULL,
     `isCollection` int NULL COMMENT '收藏',
     `isDelete` int NULL COMMENT '删除',
     `demand_capacity` varchar(255) NULL COMMENT '需求发电量',
     `actual_capacity` varchar(255) NULL COMMENT '实际发电量',
     `programme_state` varchar(255) NULL,
+    `programme_purpose` varchar(255)  NULL COMMENT '方案用途',
+    `inverter_id` varchar(255)  NULL COMMENT '逆变器id',
+    `inverter_num` varchar(255)  NULL COMMENT '逆变器数量',
     PRIMARY KEY (`programme_id`)
 )ENGINE = InnoDB CHARACTER SET = utf8 COLLATE =  utf8_general_ci ROW_FORMAT = Dynamic;
 

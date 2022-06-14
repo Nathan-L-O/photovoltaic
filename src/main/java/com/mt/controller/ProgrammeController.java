@@ -3,10 +3,13 @@ package com.mt.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mt.common.annotation.LoginAuthentication;
 import com.mt.mapper.FormMapper;
+import com.mt.mapper.InverterMapper;
 import com.mt.mapper.ProgrammeMapper;
 import com.mt.pojo.Form;
+import com.mt.pojo.Inverter;
 import com.mt.pojo.Programme;
 import com.mt.request.UserBaseRequest;
+import com.mt.utils.CalculationUtils;
 import com.mt.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -30,37 +33,48 @@ public class ProgrammeController {
     private ProgrammeMapper programmeMapper;
     @Autowired
     private FormMapper formMapper;
+    @Autowired
+    private InverterMapper inverterMapper;
 
     @ApiOperation(value="获取未删除的方案")
-    @LoginAuthentication
+//    @LoginAuthentication
     @RequestMapping(value = "selectNotDelete", method = RequestMethod.GET)
-    public Result<Object> selectById(HttpServletRequest httpServletRequest, UserBaseRequest userBaseRequest,Boolean isCollcetion) {
+    public Result<Object> selectNotDelete(HttpServletRequest httpServletRequest, UserBaseRequest userBaseRequest) {
         try {
             List<Programme> programmes = new ArrayList<>();
-            if (isCollcetion){
-                programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
-                        .eq("user_id",userBaseRequest.getUserId())
-                        .eq("isCollection",1)
-                        .ne("isDelete",1));
-            }else {
-                programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
-                        .eq("user_id",userBaseRequest.getUserId())
-                        .ne("isDelete",1));
-            }
+            programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
+//                       .eq("user_id",userBaseRequest.getUserId())
+                    .eq("isDelete",0));
+            return Result.success(programmes);
+        }catch (Exception e){
+            return Result.fail(e.getMessage());
+        }
+    }
+    @ApiOperation(value="获取删除的方案")
+//    @LoginAuthentication
+    @RequestMapping(value = "selectDelete", method = RequestMethod.GET)
+    public Result<Object> selectDelete(HttpServletRequest httpServletRequest, UserBaseRequest userBaseRequest) {
+        try {
+            List<Programme> programmes = new ArrayList<>();
+            programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
+//                       .eq("user_id",userBaseRequest.getUserId())
+                    .eq("isDelete",1));
             return Result.success(programmes);
         }catch (Exception e){
             return Result.fail(e.getMessage());
         }
     }
 
+
     @ApiOperation(value="获取收藏的方案")
-    @LoginAuthentication
+//    @LoginAuthentication
     @RequestMapping(value = "selectIsCollection", method = RequestMethod.GET)
     public Result<Object> selectIsCollection(HttpServletRequest httpServletRequest, UserBaseRequest userBaseRequest) {
         try {
             List<Programme> programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
-                    .eq("user_id",userBaseRequest.getUserId())
-                    .ne("isDelete",1));
+//                    .eq("user_id",userBaseRequest.getUserId())
+                    .eq("isDelete",0)
+                    .eq("isCollection",1));
             return Result.success(programmes);
         }catch (Exception e){
             return Result.fail(e.getMessage());
@@ -68,24 +82,43 @@ public class ProgrammeController {
     }
 
     @ApiOperation(value="创建方案")
-    @LoginAuthentication
+//    @LoginAuthentication
     @RequestMapping(value = "create", method = RequestMethod.POST)
     public Result<Object> create(HttpServletRequest httpServletRequest,UserBaseRequest userBaseRequest,
-            @RequestBody Programme programme,
-            @RequestBody Form form) {
-        try {
-            int update = formMapper.updateById(form);
-            if (update == 1){
-                programme.setUser_id(userBaseRequest.getUserId());
-                programme.setActual_capacity(form.getActual_capacity());
-                programme.setDemand_capacity(form.getDemand_capacity());
-                programme.setUpdate_date(new Date());
-                int flag = programmeMapper.insert(programme);
-                if (flag == 1){
-                    return Result.success("创建成功");
+            @RequestBody Programme programme) {
+        try{
+//            programme.setUser_id(userBaseRequest.getUserId());
+            programme.setUpdate_date(new Date());
+            programme.setIsCollection(0);
+            programme.setIsDelete(0);
+            programme.setCreate_date(new Date());
+            int flag = programmeMapper.insert(programme);
+            Inverter inverter = inverterMapper.selectById(String.valueOf(programme.getInverter_id()));
+            Map<String,Form> map = CalculationUtils.getGeneratingCapacity(inverter,programme.getDemand_capacity(),Integer.valueOf(programme.getInverter_num()));
+            List<Form> list = new ArrayList<>();
+            if (map.get("practical")!=null){
+                Form form = map.get("practical");
+                form.setProgramme_id(programme.getProgramme_id());
+                formMapper.insert(form);
+                list.add(form);
+            }
+            if (map.get("economic")!=null){
+                Form form = map.get("economic");
+                form.setProgramme_id(programme.getProgramme_id());
+                formMapper.insert(form);
+                list.add(form);
+            }
+            if (list.size()==2){
+                //输出的第一个为实际发电量-需求发电量最小的方案
+                Collections.sort(list, Comparator.comparingInt(o -> (int) (Double.parseDouble(o.getDemand_capacity()) - Double.parseDouble(o.getActual_capacity()))));
+                //如果第一个方案超出逆变器电压范围则将第二个方案设置为最优
+                if (list.get(0).getErrmsg() != null && list.get(1).getErrmsg() == null){
+                    Form form = list.get(1);
+                    list.set(1,list.get(0));
+                    list.set(0,form);
                 }
             }
-            return Result.fail("创建失败");
+            return Result.success(list);
         }catch (Exception e){
             return Result.fail(e.getMessage());
         }
@@ -94,37 +127,58 @@ public class ProgrammeController {
     @ApiOperation(value="更新方案")
     @RequestMapping(value = "update", method = RequestMethod.POST)
     public Result<Object> update(
-            @RequestBody List<Form> forms) {
-        try {
-            Boolean f = true;
-            for (Form form : forms) {
-                int flag = formMapper.updateById(form);
-                if (flag != 1){
-                    f = false;
+            @RequestBody Programme programme) {
+        try{
+//            programme.setUser_id(userBaseRequest.getUserId());
+            programme.setUpdate_date(new Date());
+            int flag = programmeMapper.updateById(programme);
+            if (flag ==1){
+                Inverter inverter = inverterMapper.selectById(String.valueOf(programme.getInverter_id()));
+                Map<String,Form> map = CalculationUtils.getGeneratingCapacity(inverter,programme.getDemand_capacity(),Integer.valueOf(programme.getInverter_num()));
+                List<Form> list = new ArrayList<>();
+                if (map.get("practical")!=null){
+                    Form form = map.get("practical");
+                    form.setProgramme_id(programme.getProgramme_id());
+                    formMapper.insert(form);
+                    list.add(form);
                 }
+                if (map.get("economic")!=null){
+                    Form form = map.get("economic");
+                    form.setProgramme_id(programme.getProgramme_id());
+                    formMapper.insert(form);
+                    list.add(form);
+                }
+                if (list.size()==2){
+                    //输出的第一个为实际发电量-需求发电量最小的方案
+                    Collections.sort(list, Comparator.comparingInt(o -> (int) (Double.parseDouble(o.getDemand_capacity()) - Double.parseDouble(o.getActual_capacity()))));
+                    //如果第一个方案超出逆变器电压范围则将第二个方案设置为最优
+                    if (list.get(0).getErrmsg() != null && list.get(1).getErrmsg() == null){
+                        Form form = list.get(1);
+                        list.set(1,list.get(0));
+                        list.set(0,form);
+                    }
             }
+            return Result.success(list);
 
-            if (f){
-                return Result.fail("更新成功");
             }
-            return Result.fail("更新失败");
+            return null;
         }catch (Exception e){
             return Result.fail(e.getMessage());
         }
     }
 
-    @ApiOperation(value="删除方案（删除到回收站)/移除回收站")
+    @ApiOperation(value="删除方案（删除到回收站)/移出回收站")
     @RequestMapping(value = "delete", method = RequestMethod.POST)
-    public Result<Object> selectById(
-            @ApiParam(value="方案id") Integer programme_id) {
+    public Result<Object> delete(
+            @RequestBody Programme programme) {
         try {
-            Programme programme = programmeMapper.selectById(programme_id);
-            if (programme.getIsDelete() == 1){
-                programme.setIsDelete(null);
+            Programme program = programmeMapper.selectById(programme.getProgramme_id());
+            if (program.getIsDelete() == 1){
+                program.setIsDelete(0);
             }else {
-                programme.setIsDelete(1);
+                program.setIsDelete(1);
             }
-            int flag = programmeMapper.updateById(programme);
+            int flag = programmeMapper.updateById(program);
             if (flag == 1){
                 return Result.success("操作成功");
             }
@@ -137,9 +191,9 @@ public class ProgrammeController {
     @ApiOperation(value="删除方案（真删除")
     @RequestMapping(value = "thoroughDelete", method = RequestMethod.POST)
     public Result<Object> thoroughDelete(
-            @ApiParam(value="方案id") Integer programme_id) {
+            @RequestBody Programme programme) {
         try {
-            int flag = programmeMapper.deleteById(programme_id);
+            int flag = programmeMapper.deleteById(programme.getProgramme_id());
             if (flag == 1){
                 return Result.success("删除成功");
             }
@@ -152,15 +206,15 @@ public class ProgrammeController {
     @ApiOperation(value="收藏/取消收藏")
     @RequestMapping(value = "collection", method = RequestMethod.POST)
     public Result<Object> collection(
-            @ApiParam(value="方案id") Integer programme_id) {
+            @RequestBody Programme programme) {
         try {
-            Programme programme = programmeMapper.selectById(programme_id);
-            if (programme.getIsCollection() == 1){
-                programme.setIsCollection(null);
+            Programme program = programmeMapper.selectById(programme.getProgramme_id());
+            if (program.getIsCollection() == 1){
+                program.setIsCollection(0);
             }else {
-                programme.setIsCollection(1);
+                program.setIsCollection(1);
             }
-            int flag = programmeMapper.updateById(programme);
+            int flag = programmeMapper.updateById(program);
             if (flag == 1){
                 return Result.success("操作成功");
             }
@@ -170,5 +224,32 @@ public class ProgrammeController {
         }
     }
 
-
+    @ApiOperation(value="复制")
+    @RequestMapping(value = "copy", method = RequestMethod.POST)
+    public Result<Object> copy(
+            @RequestBody Programme programme) {
+        try {
+            Programme program = programmeMapper.selectById(programme.getProgramme_id());
+            List<Form> forms = formMapper.selectList(new QueryWrapper<Form>().eq("programme_id",program.getProgramme_id()));
+            program.setProgramme_id(null);
+            program.setUpdate_date(new Date());
+            program.setCreate_date(new Date());
+            program.setProgramme_name(programme.getProgramme_name()+"的副本");
+            int p = programmeMapper.insert(program);
+            Boolean flag = true;
+            for (Form form : forms) {
+                form.setForm_id(null);
+                form.setProgramme_id(program.getProgramme_id());
+                int f = formMapper.insert(form);
+                if (f != 1)
+                    flag = false;
+            }
+            if (p == 1 && flag){
+                return Result.success("复制成功");
+            }
+            return Result.fail("复制失败");
+        }catch (Exception e){
+            return Result.fail(e.getMessage());
+        }
+    }
 }

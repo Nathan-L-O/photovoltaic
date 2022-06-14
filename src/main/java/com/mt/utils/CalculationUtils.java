@@ -44,11 +44,11 @@ public class CalculationUtils {
             Double outputLimit = 3.55*moduleType.getName()*(practical.getBattery_number()/practical.getBracket_number());
 
             Double practical_capacity = module_power*practical.getBattery_number();
-            practical.setCapacity(practical_capacity);
+            practical.setCapacity(String.valueOf(practical_capacity));
             //如果得出的发电量大于预期发电量 每个支架减少一个电池得出经济方案
             if (practical_capacity>Double.parseDouble(capacity)){
                 economic.setBattery_number(practical.getBattery_number()-practical.getBracket_number());
-                economic.setCapacity(economic.getBattery_number()*module_power);
+                economic.setCapacity(String.format("%.2f",economic.getBattery_number()*module_power));
                 economic.setBracket_number(practical.getBracket_number());
 
                 if (2.8*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number()) < Double.parseDouble(inverter.getInverter_lower_limit())){
@@ -125,7 +125,7 @@ public class CalculationUtils {
             formVo.add(new FormVo(null,form_id+0.2,"消费系统",null,"",null,form_id));
             formVo.add(new FormVo(false,++form_id,"运输费用",null,"",null,null));
             formVo.add(new FormVo(false,++form_id,"测试安装",null,"",null,null));
-            forms.put("practical", new Form(JSON.toJSONString(formVo),String.valueOf(practical.getCapacity()),capacity,practical.getErrmsg()));
+            forms.put("practical", new Form(JSON.toJSONString(formVo),capacity,String.valueOf(practical.getCapacity()),practical.getErrmsg()));
         }
         if (economic.getCapacity() != null){
             List<FormVo> formVo = new ArrayList<>();
@@ -148,7 +148,7 @@ public class CalculationUtils {
             formVo.add(new FormVo(null,form_id+0.2,"消费系统",null,"",null,form_id));
             formVo.add(new FormVo(false,++form_id,"运输费用",null,"",null,null));
             formVo.add(new FormVo(false,++form_id,"测试安装",null,"",null,null));
-            forms.put("economic", new Form(JSON.toJSONString(formVo),String.valueOf(economic.getCapacity()),capacity,economic.getErrmsg()));
+            forms.put("economic", new Form(JSON.toJSONString(formVo),capacity,String.valueOf(economic.getCapacity()),economic.getErrmsg()));
         }
 
         return forms;
@@ -231,8 +231,8 @@ public class CalculationUtils {
                 economic.setBracket_number(1);
                 practical.setBattery_number(next);
                 economic.setBattery_number(previous);
-                practical.setCapacity(module_power * practical.getBattery_number());
-                economic.setCapacity(module_power * economic.getBattery_number());
+                practical.setCapacity(String.format("%.2f",module_power * practical.getBattery_number()));
+                economic.setCapacity(String.format("%.2f",module_power * economic.getBattery_number()));
             }else if (0.0 == Double.valueOf(previous)%ceil_previous_bracketNumber){
                 //如果电池除以支架除的尽的情况
                 practical.setBracket_number(ceil_previous_bracketNumber.intValue());
@@ -250,14 +250,14 @@ public class CalculationUtils {
                 double next_batteryNumber_forEveryBracket = Double.valueOf(next) / bracket_number;
                 if (Math.floor(previous_batteryNumber_forEveryBracket) == Math.floor(next_batteryNumber_forEveryBracket)){
                     economic.setBattery_number(new Double(Math.floor(previous_batteryNumber_forEveryBracket)).intValue() * (int) bracket_number);
-                    economic.setCapacity(module_power * economic.getBattery_number());
+                    economic.setCapacity(String.format("%.2f",module_power * economic.getBattery_number()));
                     practical.setBattery_number(new Double(Math.ceil(next_batteryNumber_forEveryBracket)).intValue() * (int) bracket_number);
-                    practical.setCapacity(module_power * practical.getBattery_number());
+                    practical.setCapacity(String.format("%.2f",module_power * practical.getBattery_number()));
                 }else {
                     economic.setBattery_number(new Double(Math.floor(previous_batteryNumber_forEveryBracket)).intValue() * (int) bracket_number);
-                    economic.setCapacity(module_power * economic.getBattery_number());
+                    economic.setCapacity(String.format("%.2f",module_power * economic.getBattery_number()));
                     practical.setBattery_number(new Double(Math.floor(next_batteryNumber_forEveryBracket)).intValue() * (int) bracket_number);
-                    practical.setCapacity(module_power * practical.getBattery_number());
+                    practical.setCapacity(String.format("%.2f",module_power * practical.getBattery_number()));
                 }
             }
         }
