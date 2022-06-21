@@ -15,10 +15,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,23 +32,26 @@ public class FormController {
     @Autowired
     private ProgrammeMapper programmeMapper;
 
-    @ApiOperation(value="根据id查询  如果方案下有两个方案两个都返回")
-    @RequestMapping(value = "selectById", method = RequestMethod.GET)
-    public Result<Object> selectById(
-            @ApiParam(value="方案id") Integer programme_id) {
+    @ApiOperation(value="编辑表单")
+    @RequestMapping(value = "updateForm", method = RequestMethod.POST)
+    public Result<Object> updateForm(
+            @RequestBody Form form) {
         try {
-            Map<String,Object> map = new LinkedHashMap<>();
-
-            Form Enable = formMapper.selectOne(new QueryWrapper<Form>()
-                    .eq("programme_id",programme_id)
-                    .eq("chose",true));
-            map.put("Enable",Enable);
-            Form Deactivate = formMapper.selectOne(new QueryWrapper<Form>()
-                    .eq("programme_id",programme_id)
-                    .ne("chose",true));
-            if (Deactivate != null)
-                map.put("Deactivate",Deactivate);
-            return Result.success(map);
+            int i = formMapper.updateById(form);
+            Form otherForm = formMapper.selectOne(new QueryWrapper<Form>()
+                    .eq("programme_id",form.getProgramme_id())
+                    .ne("form_id",form.getForm_id()));
+            if (otherForm != null){
+                otherForm.setChose(0);
+                int j = formMapper.updateById(otherForm);
+                if (j == 1 && i == 1){
+                    return Result.success("编辑成功");
+                }
+            }
+            if (i == 1){
+                return Result.success("编辑成功");
+            }
+            return Result.fail("编辑失败");
         }catch (Exception e){
             return Result.fail(e.getMessage());
         }
@@ -64,12 +64,20 @@ public class FormController {
         try {
             Form form = formMapper.selectById(form_id);
             if (form!= null){
-                form.setChose(true);
+                form.setChose(1);
                 formMapper.updateById(form);
                 Programme programme = programmeMapper.selectById(form.getProgramme_id());
                 programme.setDemand_capacity(form.getDemand_capacity());
                 programme.setActual_capacity(form.getActual_capacity());
                 programmeMapper.updateById(programme);
+
+                Form unChose = formMapper.selectOne(new QueryWrapper<Form>()
+                        .eq("programme_id",form.getProgramme_id())
+                        .ne("form_id",form.getForm_id()));
+                if (unChose != null){
+                    unChose.setChose(0);
+                    formMapper.updateById(unChose);
+                }
                 return Result.success();
             }
             return null;

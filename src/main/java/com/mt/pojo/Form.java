@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @TableName(value = "form")
 @ApiModel(value="form", description="表格类")
 public class Form {
-    @ApiModelProperty(value="逆变器id",name="inverter_id",hidden = true)
+    @ApiModelProperty(value="id",name="inverter_id",hidden = true)
     @TableId(type = IdType.AUTO,value = "form_id")
     private Integer form_id;
 
@@ -35,7 +35,8 @@ public class Form {
     private String errmsg;
 
     @ApiModelProperty(value="是否选用",name="chose")
-    private boolean chose;
+    private Integer chose;
+
 
 
 

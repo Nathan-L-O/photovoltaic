@@ -1,5 +1,6 @@
 package com.mt;
 
+import com.mt.utils.CreateTableUtil;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,7 +13,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableScheduling
 public class MybatisPlusApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        CreateTableUtil.CreateTableUtil();
         SpringApplication.run(MybatisPlusApplication.class, args);
     }
 

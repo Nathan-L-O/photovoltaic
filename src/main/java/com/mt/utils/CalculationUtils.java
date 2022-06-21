@@ -5,7 +5,6 @@ import com.mt.pojo.Form;
 import com.mt.pojo.Inverter;
 import com.mt.vo.BatteryVo;
 import com.mt.vo.FormVo;
-import sun.text.resources.FormatData;
 
 import java.util.*;
 
@@ -25,40 +24,40 @@ public class CalculationUtils {
         //电池数量
         Double d = Double.parseDouble(capacity)/module_power;
         //判断模组类型
-        ModuleType moduleType;
+        BatteryType batteryType;
         int moduleTypeSize = Integer.parseInt(capacity) / (Integer.parseInt(inverter.getInverter_output_power())*inverter_num);
         if (moduleTypeSize>=2){
-            moduleType = ModuleType.MODULE_TYPE_0_5C;
+            batteryType = BatteryType.MODULE_TYPE_0_5C;
         }else {
-            moduleType = ModuleType.MODULE_TYPE_1C;
+            batteryType = BatteryType.MODULE_TYPE_1C;
         }
         //电池数量以及支架数量
-        map = getBatteryNumber(moduleType,d);
+        map = getBatteryNumber(batteryType,d);
         map.put("inverter_output_power", (Integer.parseInt(inverter.getInverter_output_power())*inverter_num));
         BatteryVo practical = (BatteryVo) map.get("practical");
         BatteryVo economic = (BatteryVo) map.get("economic");
 
         if (economic.getBattery_number()==null && economic.getCapacity()==null){
             //比较上下限
-            Double lowerLimit = 2.8*moduleType.getName()*(practical.getBattery_number()/practical.getBracket_number());
-            Double outputLimit = 3.55*moduleType.getName()*(practical.getBattery_number()/practical.getBracket_number());
+            Double lowerLimit = 2.8* batteryType.getName()*(practical.getBattery_number()/practical.getBracket_number());
+            Double outputLimit = 3.55* batteryType.getName()*(practical.getBattery_number()/practical.getBracket_number());
 
             Double practical_capacity = module_power*practical.getBattery_number();
-            practical.setCapacity(String.valueOf(practical_capacity));
+            practical.setCapacity(String.format("%.2f",practical_capacity));
             //如果得出的发电量大于预期发电量 每个支架减少一个电池得出经济方案
             if (practical_capacity>Double.parseDouble(capacity)){
                 economic.setBattery_number(practical.getBattery_number()-practical.getBracket_number());
                 economic.setCapacity(String.format("%.2f",economic.getBattery_number()*module_power));
                 economic.setBracket_number(practical.getBracket_number());
 
-                if (2.8*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number()) < Double.parseDouble(inverter.getInverter_lower_limit())){
+                if (2.8* batteryType.getName()*(economic.getBattery_number()/economic.getBracket_number()) < Double.parseDouble(inverter.getInverter_lower_limit())){
                     economic.setErrmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
-                            (Double.parseDouble(inverter.getInverter_lower_limit())-2.8*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number()))));
+                            (Double.parseDouble(inverter.getInverter_lower_limit())-2.8* batteryType.getName()*(economic.getBattery_number()/economic.getBracket_number()))));
                 }
 
-                if (3.55*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number()) > Double.parseDouble(inverter.getInverter_up_limit()) + 5){
+                if (3.55* batteryType.getName()*(economic.getBattery_number()/economic.getBracket_number()) > Double.parseDouble(inverter.getInverter_up_limit()) + 5){
                     economic.setErrmsg("逆变器电压上限超出范围,超出:" + String.format("%.2f",
-                            (3.55*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number())-Double.parseDouble(inverter.getInverter_up_limit()))));
+                            (3.55* batteryType.getName()*(economic.getBattery_number()/economic.getBracket_number())-Double.parseDouble(inverter.getInverter_up_limit()))));
                 }
             }else {
                 if (lowerLimit<Double.parseDouble(inverter.getInverter_lower_limit())){
@@ -71,8 +70,8 @@ public class CalculationUtils {
                 }
             }
         }else {
-            Double Economic_lowerLimit = 2.8*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number());
-            Double Economic_outputLimit = 3.55*moduleType.getName()*(economic.getBattery_number()/economic.getBracket_number());
+            Double Economic_lowerLimit = 2.8* batteryType.getName()*(economic.getBattery_number()/economic.getBracket_number());
+            Double Economic_outputLimit = 3.55* batteryType.getName()*(economic.getBattery_number()/economic.getBracket_number());
 
             if (Economic_lowerLimit<Double.parseDouble(inverter.getInverter_lower_limit())){
                 economic.setErrmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
@@ -83,8 +82,8 @@ public class CalculationUtils {
                         (Economic_outputLimit-Double.parseDouble(inverter.getInverter_up_limit()))));
             }
             if (practical.getBattery_number() != null && practical.getCapacity() != null){
-                Double lowerLimit = 2.8*moduleType.getName()*(practical.getBattery_number()/practical.getBracket_number());
-                Double outputLimit = 3.55*moduleType.getName()*(practical.getBattery_number()/practical.getBracket_number());
+                Double lowerLimit = 2.8* batteryType.getName()*(practical.getBattery_number()/practical.getBracket_number());
+                Double outputLimit = 3.55* batteryType.getName()*(practical.getBattery_number()/practical.getBracket_number());
 
                 if (lowerLimit<Double.parseDouble(inverter.getInverter_lower_limit())){
                     practical.setErrmsg("逆变器电压下限超出范围,超出:" + String.format("%.2f",
@@ -107,48 +106,51 @@ public class CalculationUtils {
         if (practical.getCapacity() != null){
             List<FormVo> formVo = new ArrayList<>();
             double form_id = 1.0;
-            formVo.add(new FormVo(true,form_id,"逆变器"+inverter.getInverter_name(),inverter_num,"",null,null));
-            if (ModuleType.MODULE_TYPE_1C == moduleType){
-                formVo.add(new FormVo(true,++form_id,"电池模组 1C",practical.getBattery_number(),"",null,null));
-            }else {
-                formVo.add(new FormVo(true,++form_id,"电池模组 0.5C",practical.getBattery_number(),"",null,null));
-            }
-            formVo.add(new FormVo(true,++form_id,"支架",practical.getBracket_number(),"",null,null));
-            formVo.add(new FormVo(true,++form_id,"高压盒",practical.getBracket_number(),"",null,null));
-            formVo.add(new FormVo(true,++form_id,"汇流柜",practical.getBracket_number(),"",null,null));
+            formVo.add(new FormVo(true,form_id,"逆变器"+inverter.getInverter_name(),inverter_num,"","",null,false,false,null));
+            if (inverter_num > 1)
+                formVo.add(new FormVo(true,++form_id,"汇流柜",1,"","",null,false,false,null));
             if (null != map.get("隔离变压器")){
-                formVo.add(new FormVo(true,++form_id,"隔离变压器",1,"",null,null));
+                formVo.add(new FormVo(true,++form_id,"隔离变压器",1,"","",null,false,false,null));
             }
-            formVo.add(new FormVo(true,++form_id,"BMS操作系统",1,"",null,null));
-            formVo.add(new FormVo(false,++form_id,"10尺集装箱",1,"",null,null));
-            formVo.add(new FormVo(null,form_id+0.1,"空调系统",null,"",null,form_id));
-            formVo.add(new FormVo(null,form_id+0.2,"消费系统",null,"",null,form_id));
-            formVo.add(new FormVo(false,++form_id,"运输费用",null,"",null,null));
-            formVo.add(new FormVo(false,++form_id,"测试安装",null,"",null,null));
-            forms.put("practical", new Form(JSON.toJSONString(formVo),capacity,String.valueOf(practical.getCapacity()),practical.getErrmsg()));
+            if (BatteryType.MODULE_TYPE_1C == batteryType){
+                formVo.add(new FormVo(true,++form_id,"电池模组 1C",practical.getBattery_number(),"","",null,false,false,null));
+            }else {
+                formVo.add(new FormVo(true,++form_id,"电池模组 0.5C",practical.getBattery_number(),"","",null,false,false,null));
+            }
+            formVo.add(new FormVo(true,++form_id,"支架",practical.getBracket_number(),"","",null,false,false,null));
+            formVo.add(new FormVo(true,++form_id,"高压盒",practical.getBracket_number(),"","",null,false,false,null));
+            formVo.add(new FormVo(true,++form_id,"BMS操作系统",1,"","",null,false,false,null));
+            formVo.add(new FormVo(false,++form_id,"20尺集装箱",1,"","",null,true,true,new String[]{"20尺集装箱","40尺集装箱","45尺集装箱"}));
+            formVo.add(new FormVo(null,form_id+0.1,"空调系统",null,"","",form_id,false,true,null));
+            formVo.add(new FormVo(null,form_id+0.2,"消费系统",null,"","",form_id,false,true,null));
+            formVo.add(new FormVo(false,++form_id,"运输费用",1,"","",null,true,true,null));
+            formVo.add(new FormVo(false,++form_id,"测试安装",1,"","",null,true,true,null));
+            forms.put("practical", new Form(JSON.toJSONString(formVo),capacity,practical.getCapacity(),practical.getErrmsg()));
         }
         if (economic.getCapacity() != null){
             List<FormVo> formVo = new ArrayList<>();
             double form_id = 1.0;
-            formVo.add(new FormVo(true,form_id,"逆变器"+inverter.getInverter_name(),inverter_num,"",null,null));
-            if (ModuleType.MODULE_TYPE_1C == moduleType){
-                formVo.add(new FormVo(true,++form_id,"电池模组 1C",economic.getBattery_number(),"",null,null));
-            }else {
-                formVo.add(new FormVo(true,++form_id,"电池模组 0.5C",economic.getBattery_number(),"",null,null));
-            }
-            formVo.add(new FormVo(true,++form_id,"支架",economic.getBracket_number(),"",null,null));
-            formVo.add(new FormVo(true,++form_id,"高压盒",economic.getBracket_number(),"",null,null));
-            formVo.add(new FormVo(true,++form_id,"汇流柜",economic.getBracket_number(),"",null,null));
+            formVo.add(new FormVo(true,form_id,"逆变器"+inverter.getInverter_name(),inverter_num,"","",null,false,false,null));
+            if (inverter_num > 1)
+                formVo.add(new FormVo(true,++form_id,"汇流柜",1,"","",null,false,false,null));
             if (null != map.get("隔离变压器")){
-                formVo.add(new FormVo(true,++form_id,"隔离变压器",1,"",null,null));
+                formVo.add(new FormVo(true,++form_id,"隔离变压器",1,"","",null,false,false,null));
             }
-            formVo.add(new FormVo(true,++form_id,"BMS操作系统",1,"",null,null));
-            formVo.add(new FormVo(false,++form_id,"10尺集装箱",1,"",null,null));
-            formVo.add(new FormVo(null,form_id+0.1,"空调系统",null,"",null,form_id));
-            formVo.add(new FormVo(null,form_id+0.2,"消费系统",null,"",null,form_id));
-            formVo.add(new FormVo(false,++form_id,"运输费用",null,"",null,null));
-            formVo.add(new FormVo(false,++form_id,"测试安装",null,"",null,null));
-            forms.put("economic", new Form(JSON.toJSONString(formVo),capacity,String.valueOf(economic.getCapacity()),economic.getErrmsg()));
+            if (BatteryType.MODULE_TYPE_1C == batteryType){
+                formVo.add(new FormVo(true,++form_id,"电池模组 1C",economic.getBattery_number(),"","",null,false,false,null));
+            }else {
+                formVo.add(new FormVo(true,++form_id,"电池模组 0.5C",economic.getBattery_number(),"","",null,false,false,null));
+            }
+            formVo.add(new FormVo(true,++form_id,"支架",economic.getBracket_number(),"","",null,false,false,null));
+            formVo.add(new FormVo(true,++form_id,"高压盒",economic.getBracket_number(),"","",null,false,false,null));
+
+            formVo.add(new FormVo(true,++form_id,"BMS操作系统",1,"","",null,false,false,null));
+            formVo.add(new FormVo(false,++form_id,"20尺集装箱",1,"","",null,true,true,new String[]{"20尺集装箱","40尺集装箱","45尺集装箱"}));
+            formVo.add(new FormVo(null,form_id+0.1,"空调系统",null,"","",form_id,false,true,null));
+            formVo.add(new FormVo(null,form_id+0.2,"消费系统",null,"","",form_id,false,true,null));
+            formVo.add(new FormVo(false,++form_id,"运输费用",1,"","",null,true,true,null));
+            formVo.add(new FormVo(false,++form_id,"测试安装",1,"","",null,true,true,null));
+            forms.put("economic", new Form(JSON.toJSONString(formVo),capacity,economic.getCapacity(),economic.getErrmsg()));
         }
 
         return forms;
@@ -177,18 +179,18 @@ public class CalculationUtils {
 
     /**
      * 获取正确的电池个数
-     * @param moduleType 模组类型
+     * @param batteryType 模组类型
      * @param number 电池个数
      * @return
      */
-    private static Map<String,Object> getBatteryNumber(ModuleType moduleType,Double number){
+    private static Map<String,Object> getBatteryNumber(BatteryType batteryType, Double number){
         Map<String,Object> map = new LinkedHashMap<>();
         BatteryVo practical = new BatteryVo();
         BatteryVo economic = new BatteryVo();
         Integer previous = null;
         Integer next = null;
 
-        if (ModuleType.MODULE_TYPE_1C == moduleType){
+        if (BatteryType.MODULE_TYPE_1C == batteryType){
             if (number > 10){
                 //电池个数
                 //例：next 82/previous 80
@@ -201,7 +203,7 @@ public class CalculationUtils {
                 previous = new Double(Math.floor(number)).intValue();
                 next = previous+1;
             }
-        }else if (ModuleType.MODULE_TYPE_0_5C == moduleType){
+        }else if (BatteryType.MODULE_TYPE_0_5C == batteryType){
             if (number > 19){
                 //电池个数
                 //例：next 82/previous 80
@@ -218,8 +220,8 @@ public class CalculationUtils {
 
 
         if (next != null && previous != null  ){
-            double previous_bracketNumber = Double.valueOf(previous)/ (double) moduleType.getIndex();
-            double next_bracketNumber = Double.valueOf(next)/ (double) moduleType.getIndex();
+            double previous_bracketNumber = Double.valueOf(previous)/ (double) batteryType.getIndex();
+            double next_bracketNumber = Double.valueOf(next)/ (double) batteryType.getIndex();
             //少的情况需要的支架数量
             Double ceil_previous_bracketNumber = Math.ceil(previous_bracketNumber);
             //多的情况需要的支架数量

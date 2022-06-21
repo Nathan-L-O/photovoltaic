@@ -23,12 +23,22 @@ public class FormVo {
     private String remake;
 
     @ApiModelProperty(value="单价")
-    private Double price;
+    private String price;
 
     @ApiModelProperty(value="关联项")
     private Double pid;
 
-    public FormVo(Boolean select, Double id, String name, Integer num, String remake, Double price, Double pid) {
+    @ApiModelProperty(value="修改数量 true可以 false不可以")
+    private Boolean required_input_num;
+
+    @ApiModelProperty(value="修改勾选")
+    private Boolean required_select;
+
+    @ApiModelProperty(value="下拉")
+    private String[] options;
+
+
+    public FormVo(Boolean select, Double id, String name, Integer num, String remake, String price, Double pid, Boolean required_input_num, Boolean required_select,String[] options) {
         this.select = select;
         this.id = id;
         this.name = name;
@@ -36,6 +46,9 @@ public class FormVo {
         this.remake = remake;
         this.price = price;
         this.pid = pid;
+        this.required_input_num = required_input_num;
+        this.required_select = required_select;
+        this.options = options;
     }
 
     public FormVo() {

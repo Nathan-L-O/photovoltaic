@@ -1,8 +1,11 @@
 package com.mt.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.mt.mapper.BatteryMapper;
 import com.mt.pojo.Battery;
+import com.mt.pojo.Inverter;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.POIXMLDocumentPart;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
@@ -19,15 +22,18 @@ import java.util.*;
 
 public class ReadExcelUtils {
 
+    //TODO
+    private static String filePath = "http://";
+
     private static Map<PicturePosition, String> pictureMap;
-    public static List readExcel(MultipartFile file,String type) throws Exception {
+    public static List readExcel(MultipartFile file) throws Exception {
         List list = new ArrayList();
         //初始化图片容器
         pictureMap = new HashMap<>();
 
-        String fileName = file.getOriginalFilename();// 文件名
-        String fileExtension = ""; // 文件扩展名
-        fileExtension = fileName.substring(fileName.lastIndexOf("."));
+        String originalFilename = file.getOriginalFilename();// 文件名
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String fileName = originalFilename.substring(0,originalFilename.lastIndexOf("."));
 
         String fileFormat = "xlsx";
         Workbook workbook;
@@ -50,31 +56,69 @@ public class ReadExcelUtils {
 
             Sheet sheet = workbook.getSheetAt(0);
             int rows = sheet.getLastRowNum(); //读取行数
+            //第一行标题
+            Row firstRow = sheet.getRow(0);
             //行遍历 跳过表头直接从数据开始读取
             for (int i = 1; i < rows+1; i++) {
                 Row row = sheet.getRow(i);
-                StringBuilder sb = new StringBuilder();
-                Battery battery = new Battery();
-                if ("battery".equals(type)) {
-                    battery.setBattery_type(getCellValue(row.getCell(0)));
-                    battery.setBattery_brand(getCellValue(row.getCell(1)));
-                    battery.setBattery_name(getCellValue(row.getCell(2)));
-                    battery.setBattery_size(getCellValue(row.getCell(3)));
-                    battery.setBattery_pic(pictureMap.get(PicturePosition.newInstance(4, 4)));
-                    battery.setBattery_voltage(getCellValue(row.getCell(5)));
-                    battery.setBattery_electric_current(getCellValue(row.getCell(6)));
-                    if (battery.getBattery_type().length()!=0){
-                        list.add(battery);
+                if (row.getCell(i) != null){
+                    Map<String,String> map = new LinkedHashMap<>();
+                    Battery battery = new Battery();
+                    Inverter inverter = new Inverter();
+                    if ("电池".equals(fileName)) {
+                        battery.setBattery_type("1");
+                        battery.setBattery_name(getCellValue(row.getCell(1)));
+                        battery.setBattery_pic(pictureMap.get(PicturePosition.newInstance(i, 2)));
+
+                        for (int j = 0; j < row.getLastCellNum(); j++) {
+                            Cell cell = row.getCell(j);
+                            Cell fistRowCell = firstRow.getCell(j);
+                            if (j == 2){
+                                map.put(getCellValue(fistRowCell),pictureMap.get(PicturePosition.newInstance(i, 2)));
+                            }else {
+                                map.put(getCellValue(fistRowCell),getCellValue(cell));
+                            }
+                        }
+                        battery.setBattery_json(JSON.toJSONString(map));
+                        if (battery.getBattery_name().length() != 0){
+                            list.add(battery);
+                        }
+                    }else if ("逆变器".equals(fileName)){
+                        String title = "";
+                        inverter.setInverter_pic(pictureMap.get(PicturePosition.newInstance(i, 5)));
+                        inverter.setInverter_name(getCellValue(row.getCell(2)));
+                        inverter.setInverter_type("光储一体机".equals(getCellValue(row.getCell(0))) ? "2" : "1");
+                        inverter.setInverter_lower_limit(StringUtils.substringBefore(getCellValue(row.getCell(6)),"~"));
+                        inverter.setInverter_up_limit(StringUtils.substringBetween(getCellValue(row.getCell(6)),"~","V"));
+                        inverter.setInverter_output_power(StringUtils.substringBefore(getCellValue(row.getCell(8)),"k"));
+                        for (int j = 0; j < row.getLastCellNum(); j++) {
+                            Cell cell = row.getCell(j);
+                            Cell fistRowCell = firstRow.getCell(j);
+                            if (j == 5){
+                                map.put(getCellValue(fistRowCell),pictureMap.get(PicturePosition.newInstance(i, 5)));
+                            }else {
+                                String firstCellValue = getCellValue(fistRowCell);
+                                switch (Objects.requireNonNull(firstCellValue)){
+                                    case "PV输入参数":
+                                        title = "(PV)";break;
+                                    case "直流侧参数":
+                                        title = "(直流)";break;
+                                    case "交流测 (并网)":
+                                        title = "(并网)";break;
+                                    case "交流参数 (离网端)":
+                                        title = "(离网)";break;
+                                    case "效率":
+                                        title = "";break;
+                                }
+                                map.put((firstCellValue + title).trim(),getCellValue(cell));
+                            }
+                        }
+                        inverter.setInverter_json(JSON.toJSONString(map));
+                        if (inverter.getInverter_name().length() != 0){
+                            list.add(inverter);
+                        }
                     }
                 }
-//                for (int j = 0; j < row.getLastCellNum(); j++) {
-//                    Cell cell = row.getCell(j);
-//                    if (j == 4){
-//                        sb.append(pictureMap.get(PicturePosition.newInstance(i, 4)));
-//                    }else {
-//                        sb.append(getCellValue(cell));
-//                    }
-//                }
             }
             return list;
         } catch (FileNotFoundException e) {
@@ -84,7 +128,6 @@ public class ReadExcelUtils {
         }
         return null;
     }
-
 
 
  
@@ -172,12 +215,14 @@ public class ReadExcelUtils {
     public static String printImg(PictureData pic) {
         try {
             String ext = pic.suggestFileExtension(); //图片格式
-            String filePath = "D:\\pic\\pic" + UUID.randomUUID().toString() + "." + ext;
+            String filename = UUID.randomUUID().toString();
+//            String filePath = "E:\\pic\\pic" + filename + "." + ext;
+            String filePath = "D:\\pic\\pic" + filename + "." + ext;
             byte[] data = pic.getData();
             FileOutputStream out = new FileOutputStream(filePath);
             out.write(data);
             out.close();
-            return filePath;
+            return "http://localhost:8083/pic/pic" + filename + "." + ext;
         } catch (Exception e) {
             return "";
         }

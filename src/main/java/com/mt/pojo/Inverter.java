@@ -25,9 +25,6 @@ public class Inverter {
     @ApiModelProperty(value="逆变器输出功率",name="inverter_output_power")
     private String inverter_output_power;
 
-    @ApiModelProperty(value="价格",name="inverter_price")
-    private String inverter_price;
-
     @ApiModelProperty(value="电压下限",name="inverter_lower_limit")
     private String inverter_lower_limit;
 
@@ -36,6 +33,14 @@ public class Inverter {
 
     @ApiModelProperty(value="逆变器类型",name="inverter_type")
     private String inverter_type;
+
+    @ApiModelProperty(value="json",name="battery_json")
+    private String inverter_json;
+
+    @ApiModelProperty(value="图片地址",name="inverter_pic")
+    private String inverter_pic;
+
+
 
 
 }

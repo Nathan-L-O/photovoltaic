@@ -7,6 +7,8 @@ CREATE TABLE `photovoltaic`.`inverter`  (
     `inverter_lower_limit` varchar(255) NULL DEFAULT NULL COMMENT '电压下限',
     `inverter_up_limit` varchar(255) NULL DEFAULT NULL COMMENT '电压上限',
     `inverter_type` varchar(255) NULL DEFAULT NULL,
+    `inverter_json` longtext NULL,
+    `inverter_pic` varchar(255) NULL COMMENT '图片地址',
     PRIMARY KEY (`inverter_id`) USING BTREE
 )ENGINE = InnoDB CHARACTER SET = utf8 COLLATE =  utf8_general_ci ROW_FORMAT = Dynamic;
 
@@ -44,11 +46,8 @@ CREATE TABLE `photovoltaic`.`programme`  (
 CREATE TABLE `photovoltaic`.`battery`  (
     `battery_id` int(0) NOT NULL AUTO_INCREMENT,
     `battery_type` varchar(255) NULL COMMENT '电池分类',
-    `battery_brand` varchar(255) NULL COMMENT '电池品牌',
     `battery_name` varchar(255) NULL COMMENT '电池名称',
-    `battery_size` varchar(255) NULL COMMENT '电池尺寸',
     `battery_pic` varchar(255) NULL COMMENT '图片地址',
-    `battery_voltage` varchar(255) NULL COMMENT '电池电压',
-    `battery_electric_current` varchar(255) NULL COMMENT '电池电流',
+    `battery_json` longtext NULL,
     PRIMARY KEY (`battery_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE =  utf8_general_ci ROW_FORMAT = Dynamic;

@@ -1,8 +1,6 @@
 package com.mt.utils;
 
-import io.swagger.models.auth.In;
-
-public enum ModuleType {
+public enum BatteryType {
     MODULE_TYPE_0_5C(12,19),
     MODULE_TYPE_1C(24, 10);
 
@@ -14,7 +12,7 @@ public enum ModuleType {
 
     // 构造方法
 
-    private ModuleType(Integer name, int index) {
+    private BatteryType(Integer name, int index) {
 
         this.name = name;
 
@@ -24,11 +22,11 @@ public enum ModuleType {
 
     public static Integer getName(int index) {
 
-        for (ModuleType moduleType: ModuleType.values()) {
+        for (BatteryType batteryType : BatteryType.values()) {
 
-            if (moduleType.getIndex() == index) {
+            if (batteryType.getIndex() == index) {
 
-                return moduleType.name;
+                return batteryType.name;
 
             }
 

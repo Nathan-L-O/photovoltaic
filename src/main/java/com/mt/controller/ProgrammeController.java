@@ -1,7 +1,6 @@
 package com.mt.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.mt.common.annotation.LoginAuthentication;
 import com.mt.mapper.FormMapper;
 import com.mt.mapper.InverterMapper;
 import com.mt.mapper.ProgrammeMapper;
@@ -9,19 +8,19 @@ import com.mt.pojo.Form;
 import com.mt.pojo.Inverter;
 import com.mt.pojo.Programme;
 import com.mt.request.UserBaseRequest;
+import com.mt.service.ProgrammeService;
 import com.mt.utils.CalculationUtils;
 import com.mt.utils.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -35,6 +34,10 @@ public class ProgrammeController {
     private FormMapper formMapper;
     @Autowired
     private InverterMapper inverterMapper;
+
+    @Resource
+    ProgrammeService programmeService;
+
 
     @ApiOperation(value="获取未删除的方案")
 //    @LoginAuthentication
@@ -80,6 +83,19 @@ public class ProgrammeController {
             return Result.fail(e.getMessage());
         }
     }
+    @ApiOperation(value="获取方案详情")
+//    @LoginAuthentication
+    @RequestMapping(value = "selectProgrammeDetails", method = RequestMethod.GET)
+    public Result<Object> selectProgramme(HttpServletRequest httpServletRequest, UserBaseRequest userBaseRequest, Integer programme_id) {
+        try {
+
+
+            return Result.success(programmeService.selectProgrammeDetails(programme_id));
+        }catch (Exception e){
+            return Result.fail(e.getMessage());
+        }
+    }
+
 
     @ApiOperation(value="创建方案")
 //    @LoginAuthentication
@@ -87,35 +103,33 @@ public class ProgrammeController {
     public Result<Object> create(HttpServletRequest httpServletRequest,UserBaseRequest userBaseRequest,
             @RequestBody Programme programme) {
         try{
+            List<Form> list = new ArrayList<>();
+
 //            programme.setUser_id(userBaseRequest.getUserId());
             programme.setUpdate_date(new Date());
             programme.setIsCollection(0);
             programme.setIsDelete(0);
             programme.setCreate_date(new Date());
             int flag = programmeMapper.insert(programme);
-            Inverter inverter = inverterMapper.selectById(String.valueOf(programme.getInverter_id()));
-            Map<String,Form> map = CalculationUtils.getGeneratingCapacity(inverter,programme.getDemand_capacity(),Integer.valueOf(programme.getInverter_num()));
-            List<Form> list = new ArrayList<>();
-            if (map.get("practical")!=null){
-                Form form = map.get("practical");
-                form.setProgramme_id(programme.getProgramme_id());
-                formMapper.insert(form);
-                list.add(form);
-            }
-            if (map.get("economic")!=null){
-                Form form = map.get("economic");
-                form.setProgramme_id(programme.getProgramme_id());
-                formMapper.insert(form);
-                list.add(form);
-            }
-            if (list.size()==2){
-                //输出的第一个为实际发电量-需求发电量最小的方案
-                Collections.sort(list, Comparator.comparingInt(o -> (int) (Double.parseDouble(o.getDemand_capacity()) - Double.parseDouble(o.getActual_capacity()))));
-                //如果第一个方案超出逆变器电压范围则将第二个方案设置为最优
-                if (list.get(0).getErrmsg() != null && list.get(1).getErrmsg() == null){
-                    Form form = list.get(1);
-                    list.set(1,list.get(0));
-                    list.set(0,form);
+            if (1 == flag) {
+                Inverter inverter = inverterMapper.selectById(String.valueOf(programme.getInverter_id()));
+                Map<String, Form> map = CalculationUtils.getGeneratingCapacity(inverter, programme.getDemand_capacity(), Integer.valueOf(programme.getInverter_num()));
+
+                for (Form form : map.values()) {
+                    form.setProgramme_id(programme.getProgramme_id());
+                    formMapper.insert(form);
+                    list.add(form);
+                }
+
+                if (list.size() == 2) {
+                    //输出的第一个为实际发电量-需求发电量最小的方案
+                    Collections.sort(list, Comparator.comparingInt(o -> (int) (Double.parseDouble(o.getDemand_capacity()) - Double.parseDouble(o.getActual_capacity()))));
+                    //如果第一个方案超出逆变器电压范围则将第二个方案设置为最优
+                    if (list.get(0).getErrmsg() != null && list.get(1).getErrmsg() == null) {
+                        Form form = list.get(1);
+                        list.set(1, list.get(0));
+                        list.set(0, form);
+                    }
                 }
             }
             return Result.success(list);
@@ -136,6 +150,7 @@ public class ProgrammeController {
                 Inverter inverter = inverterMapper.selectById(String.valueOf(programme.getInverter_id()));
                 Map<String,Form> map = CalculationUtils.getGeneratingCapacity(inverter,programme.getDemand_capacity(),Integer.valueOf(programme.getInverter_num()));
                 List<Form> list = new ArrayList<>();
+                formMapper.delete(new QueryWrapper<Form>().eq("programme_id",programme.getProgramme_id()));
                 if (map.get("practical")!=null){
                     Form form = map.get("practical");
                     form.setProgramme_id(programme.getProgramme_id());
