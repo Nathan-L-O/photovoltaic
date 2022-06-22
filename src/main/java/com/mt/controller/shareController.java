@@ -15,13 +15,11 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import javax.annotation.Resource;
 import javax.servlet.http.*;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 @RestController
 @RequestMapping("/share")
@@ -50,7 +48,8 @@ public class shareController {
                 moduleName = md5Url;
             }
 
-            String JM = HashUtil.decrypt(moduleName,PASSWORD);
+            byte[] base64decodedBytes = Base64.getDecoder().decode(moduleName);
+            String JM = HashUtil.decrypt(new String(base64decodedBytes, "utf-8"),PASSWORD);
             String str = StringUtils.substring(JM,SALT_LENGTH);
             String programme_id = StringUtils.substringBefore(str,"~");
             String rang = StringUtils.substringAfter(str,"~");
@@ -64,14 +63,19 @@ public class shareController {
 
     }
 
-    @RequestMapping(value = "getURL",method = RequestMethod.GET)
+    @RequestMapping(value = "getURL",method = RequestMethod.POST)
     public Result getURL(Integer programmer_id,String range) {
-        String url = "";
-        String random = RandomStringUtils.randomNumeric(SALT_LENGTH);
-        String saltId = random + programmer_id +"~"+ range;
-        Boolean flag = true;
+        try {
+            String url = "";
+            String random = RandomStringUtils.randomNumeric(SALT_LENGTH);
+            String saltId = random + programmer_id +"~"+ range;
             url = HashUtil.encrypt(saltId.getBytes(),PASSWORD);
-        return Result.success(url);
+
+            return Result.success(Base64.getUrlEncoder().encodeToString(url.getBytes("utf-8")));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }
