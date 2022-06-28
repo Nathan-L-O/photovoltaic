@@ -3,7 +3,6 @@ CREATE TABLE `photovoltaic`.`inverter`  (
     `inverter_id` integer NOT NULL AUTO_INCREMENT,
     `inverter_name` varchar(255) NULL DEFAULT NULL,
     `inverter_output_power` varchar(255) NULL DEFAULT NULL COMMENT '输出功率',
-    `inverter_price` varchar(255) NULL DEFAULT NULL COMMENT '价格',
     `inverter_lower_limit` varchar(255) NULL DEFAULT NULL COMMENT '电压下限',
     `inverter_up_limit` varchar(255) NULL DEFAULT NULL COMMENT '电压上限',
     `inverter_type` varchar(255) NULL DEFAULT NULL,
