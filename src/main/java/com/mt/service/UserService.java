@@ -52,6 +52,11 @@ public interface UserService {
     BasicUser smsLoginAction(UserBaseRequest request);
 
     /**
+     * 旧密码重置密码
+     */
+    BasicUser reset(UserBaseRequest request);
+
+    /**
      * 短信重置密码获取
      *
      * @param request
@@ -67,4 +72,19 @@ public interface UserService {
      */
     BasicUser smsResetAction(UserBaseRequest request);
 
+    /**
+     * 注册短信验证码
+     *
+     * @param request
+     * @return
+     */
+    void smsRegister(UserBaseRequest request);
+
+    /**
+     * 用户注册
+     *
+     * @param request
+     * @return
+     */
+    void smsRegisterAction(UserBaseRequest request);
 }

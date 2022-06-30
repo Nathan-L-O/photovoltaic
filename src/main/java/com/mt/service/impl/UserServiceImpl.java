@@ -77,11 +77,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BasicUser smsLoginAction(UserBaseRequest request) {
-        VerificationCodeUtil.validate(request.getUsername(), request.getPassword());
+        VerificationCodeUtil.validate(request.getUsername(), request.getCode());
         AssertUtil.assertTrue(VerificationCodeUtil.validate(request.getUsername()), RestResultCode.UNAUTHORIZED, "验证过程非法");
 
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("username", request.getUsername()));
         VerificationCodeUtil.afterCaptcha(request.getUsername());
+
+        return getBasicUser(user);
+    }
+
+    @Override
+    public BasicUser reset(UserBaseRequest request) {
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("username", request.getUsername()));
+        AssertUtil.assertNotNull(user, RestResultCode.NOT_FOUND, "用户或密码不正确");
+        String newPassword = HashUtil.md5(HashUtil.md5(request.getNewPassword()) + user.getSalt());
+        AssertUtil.assertEquals(newPassword,user.getPassword(),"用户或密码不正确");
+        user.setPassword(newPassword);
+        userMapper.insert(user);
 
         return getBasicUser(user);
     }
@@ -95,7 +107,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BasicUser smsResetAction(UserBaseRequest request) {
-        VerificationCodeUtil.validate(request.getUsername(), request.getPassword());
+        VerificationCodeUtil.validate(request.getUsername(), request.getCode());
         AssertUtil.assertTrue(VerificationCodeUtil.validate(request.getUsername()), RestResultCode.UNAUTHORIZED, "验证过程非法");
 
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("username", request.getUsername()));
@@ -105,6 +117,31 @@ public class UserServiceImpl implements UserService {
         VerificationCodeUtil.afterCaptcha(request.getUsername());
 
         return getBasicUser(user);
+    }
+
+    @Override
+    public void smsRegister(UserBaseRequest request) {
+        AssertUtil.assertNull(userMapper.selectOne(new QueryWrapper<User>().eq("username",request.getUsername())),"用户已存在");
+        verificationCodeUtil.initRegisterSmsCode(request.getUsername());
+    }
+
+    @Override
+    public void smsRegisterAction(UserBaseRequest request) {
+        VerificationCodeUtil.validate(request.getUsername(),request.getCode());
+        AssertUtil.assertTrue(VerificationCodeUtil.validate(request.getUsername()),RestResultCode.UNAUTHORIZED, "验证过程非法");
+
+        User user = new User();
+        String salt = UUIDUtil.generate(false);
+        user.setUsername(request.getUsername());
+        user.setPassword(HashUtil.md5(HashUtil.md5(request.getPassword()) + salt));
+        user.setSalt(salt);
+        userMapper.insert(user);
+
+//        UserInfo userInfo = getUserInfo(user,request);
+//        userInfoMapper.insert(userInfo);
+
+        VerificationCodeUtil.afterCaptcha(request.getUsername());
+
     }
 
     private BasicUser getBasicUser(User user) {
@@ -121,4 +158,20 @@ public class UserServiceImpl implements UserService {
         }
         return basicUser;
     }
+
+    /**
+     * 根据用户名查询用户ID，从而添加到用户信息中，并将请求中的信息保存成用户信息中
+     */
+//    private UserInfo getUserInfo(User user,UserBaseRequest request){
+//        UserInfo userInfo = new UserInfo();
+//        user = userMapper.selectOne(new QueryWrapper<User>().eq("username",request.getUsername()));
+//        userInfo.setUserId(user.getUserId());
+//        userInfo.setRealName(request.getRealName());
+//        userInfo.setSex(request.getSex());
+//        userInfo.setMobilePhone(request.getUsername());
+//        userInfo.setCompany(request.getCompany());
+//        userInfo.setJob(request.getJob());
+//        userInfo.setNickname(request.getNickname());
+//        return userInfo;
+//    }
 }

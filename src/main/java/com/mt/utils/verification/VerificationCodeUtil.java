@@ -143,13 +143,13 @@ public class VerificationCodeUtil {
     /**
      * 生成验证码并返回
      *
-     * @param userId UserID
+     * @param mobile username
      * @return code
      */
-    public static String initCode(String userId, CaptchaType captchaType) {
-        AssertUtil.assertStringNotBlank(userId);
-        UserVerificationCode userVerificationCode = new UserVerificationCode(userId, captchaType);
-        V_POOL.put(userId, userVerificationCode);
+    public static String initCode(String mobile, CaptchaType captchaType) {
+        AssertUtil.assertStringNotBlank(mobile);
+        UserVerificationCode userVerificationCode = new UserVerificationCode(mobile, captchaType);
+        V_POOL.put(mobile, userVerificationCode);
         return userVerificationCode.getCode();
     }
 
@@ -167,32 +167,35 @@ public class VerificationCodeUtil {
 
     /**
      * 校验，一次有效
+     *
+     * @param mobile username
+     * @param code 验证码
      */
-    public static void validate(String userId, String code) {
+    public static void validate(String mobile, String code) {
         AssertUtil.assertStringNotBlank(code);
-        AssertUtil.assertTrue(V_POOL.containsKey(userId), "验证码已失效");
-        AssertUtil.assertTrue(V_POOL.get(userId).getValidateCode().equalsIgnoreCase(code), "验证码错误");
-        P_POOL.put(userId, System.currentTimeMillis() / 1000);
-        V_POOL.remove(userId);
+        AssertUtil.assertTrue(V_POOL.containsKey(mobile), "验证码已失效");
+        AssertUtil.assertTrue(V_POOL.get(mobile).getValidateCode().equalsIgnoreCase(code), "验证码错误");
+        P_POOL.put(mobile, System.currentTimeMillis() / 1000);
+        V_POOL.remove(mobile);
     }
 
     /**
      * 验证状态判断
      *
-     * @param userId
+     * @param mobile username
      * @return
      */
-    public static boolean validate(String userId) {
-        return P_POOL.containsKey(userId);
+    public static boolean validate(String mobile) {
+        return P_POOL.containsKey(mobile);
     }
 
     /**
      * 验证状态更新
      *
-     * @param userId
+     * @param mobile username
      */
-    public static void afterCaptcha(String userId) {
-        P_POOL.remove(userId);
+    public static void afterCaptcha(String mobile) {
+        P_POOL.remove(mobile);
     }
 
     /**

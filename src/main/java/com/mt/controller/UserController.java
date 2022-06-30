@@ -44,11 +44,12 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping
+    @PostMapping(value = "/login")
     public Result<BasicUser> login(@RequestBody(required = false) UserBaseRequest request) {
         AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
         AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
         AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "密码不能为空");
+
         return Result.success(userService.login(request));
     }
 
@@ -77,13 +78,28 @@ public class UserController {
     public Result<BasicUser> smsLogin(@RequestBody(required = false) UserBaseRequest request) {
         AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
         AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
-        AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "验证码不能为空");
+        AssertUtil.assertStringNotBlank(request.getCode(), RestResultCode.ILLEGAL_PARAMETERS, "验证码不能为空");
 
         return Result.success(userService.smsLoginAction(request));
     }
+    /**
+     * 旧密码重置密码
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping(value = "/reset")
+    public Result<BasicUser> reset(@RequestBody(required = false) UserBaseRequest request){
+        AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
+        AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
+        AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "旧密码不能为空");
+        AssertUtil.assertStringNotBlank(request.getNewPassword(), RestResultCode.ILLEGAL_PARAMETERS, "新密码不能为空");
+
+        return Result.success(userService.reset(request));
+    }
 
     /**
-     * 重置密码请求
+     * 验证码重置密码请求
      *
      * @param request
      * @return
@@ -98,7 +114,7 @@ public class UserController {
     }
 
     /**
-     * 重置密码
+     * 验证码重置密码
      *
      * @param request
      * @return
@@ -107,10 +123,41 @@ public class UserController {
     public Result<BasicUser> smsReset(@RequestBody(required = false) UserBaseRequest request) {
         AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
         AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
-        AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "验证码不能为空");
+        AssertUtil.assertStringNotBlank(request.getCode(), RestResultCode.ILLEGAL_PARAMETERS, "验证码不能为空");
         AssertUtil.assertStringNotBlank(request.getNewPassword(), RestResultCode.ILLEGAL_PARAMETERS, "新密码不能为空");
 
         return Result.success(userService.smsResetAction(request));
+    }
+    /**
+     * 短信验证码注册请求
+     *
+     * @param request
+     * @return
+     */
+    @GetMapping(value = "/smsRegister")
+    public Result<String> smsRegisterRequest(@RequestBody(required = false) UserBaseRequest request){
+        AssertUtil.assertNotNull(request,RestResultCode.ILLEGAL_PARAMETERS);
+
+        userService.smsRegister(request);
+        return Result.success("短信验证码已下发");
+    }
+
+    /**
+     * 注册
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping(value = "/smsRegister")
+    public Result<String> smsRegister(@RequestBody(required = false) UserBaseRequest request){
+        AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
+        AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
+        AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "验证码不能为空");
+        AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "密码不能为空");
+//        AssertUtil.assertStringNotBlank(request.getNickname(), RestResultCode.ILLEGAL_PARAMETERS, "昵称不能为空");
+
+        userService.smsRegisterAction(request);
+        return Result.success("注册成功");
     }
 
 }
