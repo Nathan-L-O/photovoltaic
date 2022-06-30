@@ -60,7 +60,7 @@ public class UserController {
      * @return
      */
     @GetMapping(value = "/smsLogin")
-    public Result<String> smsRequest(@RequestBody(required = false) UserBaseRequest request) {
+    public Result<String> smsRequest(UserBaseRequest request) {
         AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
         AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
 
@@ -105,7 +105,7 @@ public class UserController {
      * @return
      */
     @GetMapping(value = "/smsReset")
-    public Result<String> smsResetRequest(@RequestBody(required = false) UserBaseRequest request) {
+    public Result<String> smsResetRequest(UserBaseRequest request) {
         AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
         AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
 
@@ -135,7 +135,7 @@ public class UserController {
      * @return
      */
     @GetMapping(value = "/smsRegister")
-    public Result<String> smsRegisterRequest(@RequestBody(required = false) UserBaseRequest request){
+    public Result<String> smsRegisterRequest(UserBaseRequest request){
         AssertUtil.assertNotNull(request,RestResultCode.ILLEGAL_PARAMETERS);
 
         userService.smsRegister(request);
