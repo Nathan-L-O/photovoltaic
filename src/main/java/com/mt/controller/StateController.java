@@ -53,11 +53,12 @@ public class StateController {
     }
 
     @RequestMapping(value = "getAll", method = RequestMethod.GET)
-    public Result getAll() {
+    @LoginAuthentication
+    public Result getAll(HttpServletRequest httpServletRequest,UserBaseRequest userBaseRequest) {
         try{
             return Result.success(stateMapper.selectList(new QueryWrapper<State>()
                     .eq("user_id",0)
-                    .or().eq("user_id",1)
+                    .or().eq("user_id",userBaseRequest.getUserId())
                     ));
         }catch (Exception e){
             return Result.fail(e.getMessage());

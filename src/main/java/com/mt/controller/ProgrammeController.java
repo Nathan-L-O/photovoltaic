@@ -67,7 +67,7 @@ public class ProgrammeController {
         try {
             List<Programme> programmes = new ArrayList<>();
             programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
-//                       .eq("user_id",userBaseRequest.getUserId())
+                       .eq("user_id",userBaseRequest.getUserId())
                     .eq("isDelete",1));
             return Result.success(selectState(programmes));
         }catch (Exception e){
