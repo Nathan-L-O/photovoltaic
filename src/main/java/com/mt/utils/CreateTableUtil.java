@@ -16,8 +16,8 @@ public class CreateTableUtil {
 
         //一开始必须填一个已经存在的数据库
         String url = "jdbc:mysql://localhost:3306/mysql?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT";
-//        Connection conn = DriverManager.getConnection(url, "root", "123456");//建立连接
-        Connection conn = DriverManager.getConnection(url, "root", "1qaz2wsx");//建立连接
+        Connection conn = DriverManager.getConnection(url, "root", "123456");//建立连接
+//        Connection conn = DriverManager.getConnection(url, "root", "1qaz2wsx");//建立连接
         Statement stat = conn.createStatement();
 
         //创建数据库hello
@@ -41,8 +41,8 @@ public class CreateTableUtil {
             stat.close();
             conn.close();
             url = "jdbc:mysql://localhost:3306/photovoltaic?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT";
-//            conn = DriverManager.getConnection(url, "root", "123456");
-            conn = DriverManager.getConnection(url, "root", "1qaz2wsx");
+            conn = DriverManager.getConnection(url, "root", "123456");
+//            conn = DriverManager.getConnection(url, "root", "1qaz2wsx");
             stat = conn.createStatement();
 
             ClassPathResource rc = new ClassPathResource("sql/photovoltaic.sql");

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mt.mapper.FormMapper;
 import com.mt.mapper.InverterMapper;
 import com.mt.mapper.ProgrammeMapper;
+import com.mt.mapper.StateMapper;
 import com.mt.pojo.Form;
 import com.mt.pojo.Inverter;
 import com.mt.pojo.Programme;
@@ -34,6 +35,8 @@ public class ProgrammeController {
     private FormMapper formMapper;
     @Autowired
     private InverterMapper inverterMapper;
+    @Autowired
+    private StateMapper stateMapper;
 
     @Resource
     ProgrammeService programmeService;
@@ -48,7 +51,7 @@ public class ProgrammeController {
             programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
 //                       .eq("user_id",userBaseRequest.getUserId())
                     .eq("isDelete",0));
-            return Result.success(programmes);
+            return Result.success(selectState(programmes));
         }catch (Exception e){
             return Result.fail(e.getMessage());
         }
@@ -62,7 +65,7 @@ public class ProgrammeController {
             programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
 //                       .eq("user_id",userBaseRequest.getUserId())
                     .eq("isDelete",1));
-            return Result.success(programmes);
+            return Result.success(selectState(programmes));
         }catch (Exception e){
             return Result.fail(e.getMessage());
         }
@@ -78,7 +81,7 @@ public class ProgrammeController {
 //                    .eq("user_id",userBaseRequest.getUserId())
                     .eq("isDelete",0)
                     .eq("isCollection",1));
-            return Result.success(programmes);
+            return Result.success(selectState(programmes));
         }catch (Exception e){
             return Result.fail(e.getMessage());
         }
@@ -239,6 +242,18 @@ public class ProgrammeController {
         }
     }
 
+    @ApiOperation(value="修改方案状态")
+    @RequestMapping(value = "updateState", method = RequestMethod.POST)
+    public Result<Object> updateState(
+            @RequestBody Programme programme) {
+        try {
+            programmeMapper.updateById(programme);
+            return Result.success("更新成功");
+        }catch (Exception e){
+            return Result.fail(e.getMessage());
+        }
+    }
+
     @ApiOperation(value="复制")
     @RequestMapping(value = "copy", method = RequestMethod.POST)
     public Result<Object> copy(
@@ -266,5 +281,14 @@ public class ProgrammeController {
         }catch (Exception e){
             return Result.fail(e.getMessage());
         }
+    }
+
+    public List<Programme> selectState(List<Programme> programmes){
+        for (Programme p:programmes) {
+            if (p.getState_id() != null){
+                p.setState(stateMapper.selectById(p.getState_id()));
+            }
+        }
+        return programmes;
     }
 }

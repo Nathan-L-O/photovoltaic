@@ -1,6 +1,7 @@
 package com.mt.pojo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -50,7 +51,7 @@ public class Programme {
     private String actual_capacity;
 
     @ApiModelProperty(value="方案状态",name="programme_state")
-    private String programme_state;
+    private Integer state_id;
 
     @ApiModelProperty(value="方案用途",name="programme_purpose")
     private String programme_purpose;
@@ -60,5 +61,8 @@ public class Programme {
 
     @ApiModelProperty(value="逆变器数量",name="inverter_num")
     private String inverter_num;
+
+    @TableField(exist = false)
+    private State state;
 
 }
