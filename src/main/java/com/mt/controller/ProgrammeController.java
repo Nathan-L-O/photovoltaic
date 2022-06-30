@@ -1,6 +1,10 @@
 package com.mt.controller;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.mt.common.annotation.LoginAuthentication;
 import com.mt.mapper.FormMapper;
 import com.mt.mapper.InverterMapper;
 import com.mt.mapper.ProgrammeMapper;
@@ -43,13 +47,13 @@ public class ProgrammeController {
 
 
     @ApiOperation(value="获取未删除的方案")
-//    @LoginAuthentication
+    @LoginAuthentication
     @RequestMapping(value = "selectNotDelete", method = RequestMethod.GET)
     public Result<Object> selectNotDelete(HttpServletRequest httpServletRequest, UserBaseRequest userBaseRequest) {
         try {
             List<Programme> programmes = new ArrayList<>();
             programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
-//                       .eq("user_id",userBaseRequest.getUserId())
+                       .eq("user_id",userBaseRequest.getUserId())
                     .eq("isDelete",0));
             return Result.success(selectState(programmes));
         }catch (Exception e){
@@ -57,7 +61,7 @@ public class ProgrammeController {
         }
     }
     @ApiOperation(value="获取删除的方案")
-//    @LoginAuthentication
+    @LoginAuthentication
     @RequestMapping(value = "selectDelete", method = RequestMethod.GET)
     public Result<Object> selectDelete(HttpServletRequest httpServletRequest, UserBaseRequest userBaseRequest) {
         try {
@@ -73,12 +77,12 @@ public class ProgrammeController {
 
 
     @ApiOperation(value="获取收藏的方案")
-//    @LoginAuthentication
+    @LoginAuthentication
     @RequestMapping(value = "selectIsCollection", method = RequestMethod.GET)
     public Result<Object> selectIsCollection(HttpServletRequest httpServletRequest, UserBaseRequest userBaseRequest) {
         try {
             List<Programme> programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
-//                    .eq("user_id",userBaseRequest.getUserId())
+                    .eq("user_id",userBaseRequest.getUserId())
                     .eq("isDelete",0)
                     .eq("isCollection",1));
             return Result.success(selectState(programmes));
@@ -101,14 +105,14 @@ public class ProgrammeController {
 
 
     @ApiOperation(value="创建方案")
-//    @LoginAuthentication
+    @LoginAuthentication
     @RequestMapping(value = "create", method = RequestMethod.POST)
     public Result<Object> create(HttpServletRequest httpServletRequest,UserBaseRequest userBaseRequest,
             @RequestBody Programme programme) {
         try{
             List<Form> list = new ArrayList<>();
 
-//            programme.setUser_id(userBaseRequest.getUserId());
+            programme.setUser_id(userBaseRequest.getUserId());
             programme.setUpdate_date(new Date());
             programme.setIsCollection(0);
             programme.setIsDelete(0);
@@ -142,11 +146,11 @@ public class ProgrammeController {
     }
 
     @ApiOperation(value="更新方案")
+    @LoginAuthentication
     @RequestMapping(value = "update", method = RequestMethod.POST)
     public Result<Object> update(
             @RequestBody Programme programme) {
         try{
-//            programme.setUser_id(userBaseRequest.getUserId());
             programme.setUpdate_date(new Date());
             int flag = programmeMapper.updateById(programme);
             if (flag ==1){
@@ -247,7 +251,7 @@ public class ProgrammeController {
     public Result<Object> updateState(
             @RequestBody Programme programme) {
         try {
-            programmeMapper.updateById(programme);
+            programmeMapper.update(null,new UpdateWrapper<Programme>().set("state_id",programme.getState_id()).eq("programme_id",programme.getProgramme_id()));
             return Result.success("更新成功");
         }catch (Exception e){
             return Result.fail(e.getMessage());

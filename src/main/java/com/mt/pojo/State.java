@@ -25,5 +25,5 @@ public class State {
 
     private String state_css;
 
-    private Integer user_id;
+    private String user_id;
 }

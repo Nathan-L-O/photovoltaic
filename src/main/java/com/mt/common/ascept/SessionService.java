@@ -53,7 +53,7 @@ public class SessionService extends RestAop {
         BaseRestRequest request = parseRestRequest(proceedingJoinPoint);
 
         String token = httpServletRequest.getHeader(TOKEN);
-        AssertUtil.assertStringNotBlank(token, RestResultCode.ILLEGAL_PARAMETERS, "登陆凭证缺失");
+        AssertUtil.assertStringNotBlank(token, RestResultCode.UNAUTHORIZED, "登陆凭证缺失");
         User user = userService.sessionMaintain(token);
         AssertUtil.assertNotNull(user, RestResultCode.UNAUTHORIZED, "登陆凭证无效或已过期");
 
