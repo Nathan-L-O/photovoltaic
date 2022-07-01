@@ -1,5 +1,6 @@
 package com.mt.utils.verification;
 
+import com.alibaba.fastjson.JSONObject;
 import com.mt.utils.AssertUtil;
 import com.mt.utils.enums.CaptchaType;
 import com.mt.utils.enums.CommonResultCode;
@@ -11,10 +12,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -95,6 +98,12 @@ public class VerificationCodeUtil {
 
     @Resource
     private MessageUtil messageUtil;
+
+    /**
+     * 记录验证码文件路径
+     */
+    @Value("${code.path}")
+    private String path;
 
     /**
      * 生成随机（字母+数字）验证码
@@ -242,7 +251,9 @@ public class VerificationCodeUtil {
         variableList.add(1, initCode(mobile, CaptchaType.NUMBER));
         variableList.add(2, String.valueOf(lifetime));
 
-        AssertUtil.assertTrue(messageUtil.send(mobile, variableList).get("status").equals(0), "短信接口异常");
+        JSONObject jsonObject = messageUtil.send(mobile, variableList);
+        recoding(jsonObject,mobile);
+        AssertUtil.assertTrue(jsonObject.get("status").equals(0), "短信接口异常");
     }
 
     public boolean validateMobile(String mobile) {
@@ -275,4 +286,75 @@ public class VerificationCodeUtil {
         }
     }
 
+    /**
+     * 记录验证码
+     */
+    private void recoding(JSONObject jsonObject,String mobile){
+        BufferedWriter out = null;
+        String content = "";
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM");
+        String mikName = simpleDateFormat.format(date);
+        simpleDateFormat = new SimpleDateFormat("MMdd");
+        String fileName = simpleDateFormat.format(date);
+        simpleDateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+        String dateNow = simpleDateFormat.format(date);
+        File writeFile = null;
+        try {
+            File mkdirsName = new File(path + mikName);
+            if(!mkdirsName.exists()){
+                mkdirsName.mkdirs();
+            }
+            if (jsonObject.get("status").equals(0)){
+                content = dateNow + "   success:" + mobile;
+                writeFile = new File(path + mikName + "/" + fileName + "_success" + ".txt");
+                // 判断文件是否存在，不存在即新建
+                // 存在即根据操作系统添加换行符
+                if(!writeFile.exists()) {
+                    writeFile.createNewFile(); // 创建新文件
+                } else {
+                    String osName = System.getProperties().getProperty("os.name");
+                    if (osName.equals("Linux")) {
+                        content = content + "\r";
+                    } else {
+                        content = content + "\r\n";
+                    }
+                }
+            }else {
+                content = dateNow + "   defeat:" + mobile + "   msgId:" + jsonObject.get("msgid") + "   status:" + jsonObject.get("status");
+                writeFile = new File(path + mikName + "/" + fileName + "_defeat" + ".txt");
+                // 判断文件是否存在，不存在即新建
+                // 存在即根据操作系统添加换行符
+                if(!writeFile.exists()) {
+                    writeFile.createNewFile(); // 创建新文件
+                } else {
+                    String osName = System.getProperties().getProperty("os.name");
+                    if (osName.equals("Linux")) {
+                        content = content + "\r";
+                    } else {
+                        content = content + "\r\n";
+                    }
+                }
+            }
+            // 如果是在原有基础上写入则append属性为true，默认为false
+            out = new BufferedWriter(new FileWriter(writeFile,true));
+            out.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if (out != null){
+                try {
+                    out.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
 }

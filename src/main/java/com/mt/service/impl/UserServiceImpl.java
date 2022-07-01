@@ -14,6 +14,7 @@ import com.mt.utils.HashUtil;
 import com.mt.utils.UUIDUtil;
 import com.mt.utils.enums.RestResultCode;
 import com.mt.utils.verification.VerificationCodeUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,6 +42,11 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private VerificationCodeUtil verificationCodeUtil;
+
+    @Value("${user.headImage}")
+    private String FilePath;
+    @Value("${user.headImageIp}")
+    private String Ip;
 
     @Override
     public User sessionMaintain(String token) {
@@ -161,7 +167,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id",request.getUserId()));
 
         fileName = user.getUserId() + suffix;
-        File dest = new File("D:/pic/user" + "/" + fileName);
+        File dest = new File(FilePath + fileName);
         if (!dest.getParentFile().exists()){
             dest.getParentFile().mkdirs();
         }
@@ -172,7 +178,7 @@ public class UserServiceImpl implements UserService {
         }
 
         UserInfo userInfo = userInfoMapper.selectOne(new QueryWrapper<UserInfo>().eq("user_id",user.getUserId()));
-        userInfo.setUser_pic(fileName);
+        userInfo.setUser_pic(Ip + fileName);
         userInfoMapper.update(userInfo,new QueryWrapper<UserInfo>().eq("user_id",userInfo.getUserId()));
 
         return userInfo;
