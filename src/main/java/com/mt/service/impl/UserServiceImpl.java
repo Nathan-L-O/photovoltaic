@@ -1,6 +1,7 @@
 package com.mt.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.mt.exception.MengTuException;
 import com.mt.mapper.UserInfoMapper;
 import com.mt.mapper.UserMapper;
 import com.mt.pojo.user.User;
@@ -14,8 +15,11 @@ import com.mt.utils.UUIDUtil;
 import com.mt.utils.enums.RestResultCode;
 import com.mt.utils.verification.VerificationCodeUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -137,11 +141,65 @@ public class UserServiceImpl implements UserService {
         user.setSalt(salt);
         userMapper.insert(user);
 
-//        UserInfo userInfo = getUserInfo(user,request);
-//        userInfoMapper.insert(userInfo);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUserId(user.getUserId());
+        userInfo.setUserInfoId(UUIDUtil.generate(false));
+        userInfo.setMobilePhone(user.getUsername());
+        userInfoMapper.insert(userInfo);
 
         VerificationCodeUtil.afterCaptcha(request.getUsername());
 
+    }
+
+    @Override
+    public UserInfo uploadHeaderImage(MultipartFile headerImage, UserBaseRequest request) {
+        String fileName = headerImage.getOriginalFilename();
+        String suffix = fileName.substring(fileName.lastIndexOf("."));
+        if (!suffix.equals(".png") && !suffix.equals(".jpg") && !suffix.equals(".jpeg")) {
+            throw new MengTuException("上传文件类型错误");
+        }
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id",request.getUserId()));
+
+        fileName = user.getUserId() + suffix;
+        File dest = new File("D:/pic/user" + "/" + fileName);
+        if (!dest.getParentFile().exists()){
+            dest.getParentFile().mkdirs();
+        }
+        try {
+            headerImage.transferTo(dest);
+        } catch (IOException e) {
+            throw new RuntimeException("文件存储失败，服务器异常", e);
+        }
+
+        UserInfo userInfo = userInfoMapper.selectOne(new QueryWrapper<UserInfo>().eq("user_id",user.getUserId()));
+        userInfo.setUser_pic(fileName);
+        userInfoMapper.update(userInfo,new QueryWrapper<UserInfo>().eq("user_id",userInfo.getUserId()));
+
+        return userInfo;
+    }
+
+    /**
+     * 修改和添加均可使用
+     * @param request
+     * @return
+     */
+    @Override
+    public UserInfo addUserInfo(UserBaseRequest request) {
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id",request.getUserId()));
+        UserInfo userInfo = userInfoMapper.selectOne(new QueryWrapper<UserInfo>().eq("user_id",request.getUserId()));
+        userInfo.setRealName(request.getRealName());
+        userInfo.setJob(request.getJob());
+        userInfo.setCompany(request.getCompany());
+        userInfo.setSex(request.getSex());
+        userInfo.setEmail(request.getEmail());
+        userInfoMapper.update(userInfo,new QueryWrapper<UserInfo>().eq("user_id",userInfo.getUserId()));
+
+        return userInfo;
+    }
+
+    @Override
+    public UserInfo selectUserInfo(UserBaseRequest request) {
+        return userInfoMapper.selectOne(new QueryWrapper<UserInfo>().eq("user_id",request.getUserId()));
     }
 
     private BasicUser getBasicUser(User user) {
@@ -158,20 +216,4 @@ public class UserServiceImpl implements UserService {
         }
         return basicUser;
     }
-
-    /**
-     * 根据用户名查询用户ID，从而添加到用户信息中，并将请求中的信息保存成用户信息中
-     */
-//    private UserInfo getUserInfo(User user,UserBaseRequest request){
-//        UserInfo userInfo = new UserInfo();
-//        user = userMapper.selectOne(new QueryWrapper<User>().eq("username",request.getUsername()));
-//        userInfo.setUserId(user.getUserId());
-//        userInfo.setRealName(request.getRealName());
-//        userInfo.setSex(request.getSex());
-//        userInfo.setMobilePhone(request.getUsername());
-//        userInfo.setCompany(request.getCompany());
-//        userInfo.setJob(request.getJob());
-//        userInfo.setNickname(request.getNickname());
-//        return userInfo;
-//    }
 }

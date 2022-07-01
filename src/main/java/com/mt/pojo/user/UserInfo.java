@@ -65,6 +65,32 @@ public class UserInfo extends BaseDO {
      */
     private String nickname;
 
+    /**
+     * 头像地址
+     */
+    private String user_pic;
+
+    /**
+     * 邮箱
+     */
+    private String email;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getUser_pic() {
+        return user_pic;
+    }
+
+    public void setUser_pic(String user_pic) {
+        this.user_pic = user_pic;
+    }
+
     public String getUserInfoId() {
         return userInfoId;
     }

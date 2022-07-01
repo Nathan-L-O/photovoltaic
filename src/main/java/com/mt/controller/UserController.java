@@ -1,6 +1,8 @@
 package com.mt.controller;
 
 import com.mt.common.annotation.LoginAuthentication;
+import com.mt.exception.MengTuException;
+import com.mt.pojo.user.UserInfo;
 import com.mt.pojo.user.vo.BasicUser;
 import com.mt.request.UserBaseRequest;
 import com.mt.service.UserService;
@@ -8,6 +10,7 @@ import com.mt.utils.AssertUtil;
 import com.mt.utils.Result;
 import com.mt.utils.enums.RestResultCode;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -88,15 +91,15 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping(value = "/reset")
-    public Result<BasicUser> reset(@RequestBody(required = false) UserBaseRequest request){
-        AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
-        AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
-        AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "旧密码不能为空");
-        AssertUtil.assertStringNotBlank(request.getNewPassword(), RestResultCode.ILLEGAL_PARAMETERS, "新密码不能为空");
-
-        return Result.success(userService.reset(request));
-    }
+//    @PostMapping(value = "/reset")
+//    public Result<BasicUser> reset(@RequestBody(required = false) UserBaseRequest request){
+//        AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
+//        AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
+//        AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "旧密码不能为空");
+//        AssertUtil.assertStringNotBlank(request.getNewPassword(), RestResultCode.ILLEGAL_PARAMETERS, "新密码不能为空");
+//
+//        return Result.success(userService.reset(request));
+//    }
 
     /**
      * 验证码重置密码请求
@@ -152,12 +155,71 @@ public class UserController {
     public Result<String> smsRegister(@RequestBody(required = false) UserBaseRequest request){
         AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
         AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
-        AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "验证码不能为空");
+        AssertUtil.assertStringNotBlank(request.getCode(), RestResultCode.ILLEGAL_PARAMETERS, "验证码不能为空");
         AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "密码不能为空");
-//        AssertUtil.assertStringNotBlank(request.getNickname(), RestResultCode.ILLEGAL_PARAMETERS, "昵称不能为空");
 
         userService.smsRegisterAction(request);
         return Result.success("注册成功");
     }
 
+    /**
+     * 头像上传
+     */
+    @PostMapping(value = "/uploadHeaderImage")
+    @LoginAuthentication
+    public Result<BasicUser> uploadHeaderImage(@RequestParam("headerImage") MultipartFile headerImage, HttpServletRequest httpServletRequest, UserBaseRequest request){
+        AssertUtil.assertNotNull(headerImage,"图片未上传");
+
+        BasicUser basicUser = new BasicUser();
+        UserInfo userInfo = userService.uploadHeaderImage(headerImage,request);
+        basicUser.setUserId(userInfo.getUserId());
+        basicUser.setUserInfo(userInfo);
+        basicUser.setToken(httpServletRequest.getHeader("Authorization"));
+        return Result.success(basicUser);
+    }
+
+//    /**
+//     * 添加用户信息
+//     */
+//    @PostMapping(value = "/addUserInfo")
+//    @LoginAuthentication
+//    public Result<BasicUser> addUserInfo(@RequestBody UserBaseRequest request,HttpServletRequest httpServletRequest){
+//        BasicUser basicUser = new BasicUser();
+//        UserInfo userInfo = userService.addUserInfo(request);
+//        basicUser.setUserId(userInfo.getUserId());
+//        basicUser.setUserInfo(userInfo);
+//        basicUser.setToken(httpServletRequest.getHeader("Authorization"));
+//        return Result.success(basicUser);
+//    }
+
+    /**
+     * 修改用户信息
+     */
+    @PostMapping(value = "/updateUserInfo")
+    @LoginAuthentication
+    public Result<BasicUser> updateUserInfo(@RequestBody UserBaseRequest request,HttpServletRequest httpServletRequest){
+        AssertUtil.assertStringNotBlank(request.getRealName(),RestResultCode.ILLEGAL_PARAMETERS,"真实姓名不能为空");
+        AssertUtil.assertStringNotBlank(request.getCompany(),RestResultCode.ILLEGAL_PARAMETERS,"公司名称不能为空");
+        AssertUtil.assertStringNotBlank(request.getJob(),RestResultCode.ILLEGAL_PARAMETERS,"职称不能为空");
+
+        BasicUser basicUser = new BasicUser();
+        UserInfo userInfo = userService.addUserInfo(request);
+        basicUser.setUserId(userInfo.getUserId());
+        basicUser.setUserInfo(userInfo);
+        basicUser.setToken(httpServletRequest.getHeader("Authorization"));
+        return Result.success(basicUser);
+    }
+    /**
+     * 查看用户信息
+     */
+    @GetMapping(value = "/selectUserInfo")
+    @LoginAuthentication
+    public Result<BasicUser> selectUserInfo(UserBaseRequest request,HttpServletRequest httpServletRequest){
+        BasicUser basicUser = new BasicUser();
+        UserInfo userInfo = userService.selectUserInfo(request);
+        basicUser.setUserId(userInfo.getUserId());
+        basicUser.setUserInfo(userInfo);
+        basicUser.setToken(httpServletRequest.getHeader("Authorization"));
+        return Result.success(basicUser);
+    }
 }

@@ -1,8 +1,10 @@
 package com.mt.service;
 
 import com.mt.pojo.user.User;
+import com.mt.pojo.user.UserInfo;
 import com.mt.pojo.user.vo.BasicUser;
 import com.mt.request.UserBaseRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 用户服务
@@ -87,4 +89,19 @@ public interface UserService {
      * @return
      */
     void smsRegisterAction(UserBaseRequest request);
+
+    /**
+     * 头像上传
+     */
+    UserInfo uploadHeaderImage(MultipartFile headerImage, UserBaseRequest request);
+
+    /**
+     * 添加和更新用户信息
+     */
+    UserInfo addUserInfo(UserBaseRequest request);
+
+    /**
+     * 查看用户信息
+     */
+    UserInfo selectUserInfo(UserBaseRequest request);
 }
