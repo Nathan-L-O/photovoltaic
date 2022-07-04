@@ -46,11 +46,11 @@ mengtu:
     access_key_id: "2SIVMNXYMCNZTWN5F6P1"
     secret_access_key: "RmUQlLIjldw5iHr9m6u2mtnOPm9ebJ9aFNxIyMMT"
 
-#用户头像图片存储地址
+#用户头像图片存储地址,末尾要以"/"结尾
 user:
   headImage: D:/pic/user/
   headImageIp: 192.168.3.8:8083/pic/user/
-#验证码存储路径
+#验证码存储路径,末尾要以"/"结尾
 code:
   path: D:/code/
 

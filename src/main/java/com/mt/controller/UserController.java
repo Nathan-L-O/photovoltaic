@@ -85,21 +85,6 @@ public class UserController {
 
         return Result.success(userService.smsLoginAction(request));
     }
-    /**
-     * 旧密码重置密码
-     *
-     * @param request
-     * @return
-     */
-//    @PostMapping(value = "/reset")
-//    public Result<BasicUser> reset(@RequestBody(required = false) UserBaseRequest request){
-//        AssertUtil.assertNotNull(request, RestResultCode.ILLEGAL_PARAMETERS);
-//        AssertUtil.assertStringNotBlank(request.getUsername(), RestResultCode.ILLEGAL_PARAMETERS, "用户名不能为空");
-//        AssertUtil.assertStringNotBlank(request.getPassword(), RestResultCode.ILLEGAL_PARAMETERS, "旧密码不能为空");
-//        AssertUtil.assertStringNotBlank(request.getNewPassword(), RestResultCode.ILLEGAL_PARAMETERS, "新密码不能为空");
-//
-//        return Result.success(userService.reset(request));
-//    }
 
     /**
      * 验证码重置密码请求
@@ -177,20 +162,6 @@ public class UserController {
         basicUser.setToken(httpServletRequest.getHeader("Authorization"));
         return Result.success(basicUser);
     }
-
-//    /**
-//     * 添加用户信息
-//     */
-//    @PostMapping(value = "/addUserInfo")
-//    @LoginAuthentication
-//    public Result<BasicUser> addUserInfo(@RequestBody UserBaseRequest request,HttpServletRequest httpServletRequest){
-//        BasicUser basicUser = new BasicUser();
-//        UserInfo userInfo = userService.addUserInfo(request);
-//        basicUser.setUserId(userInfo.getUserId());
-//        basicUser.setUserInfo(userInfo);
-//        basicUser.setToken(httpServletRequest.getHeader("Authorization"));
-//        return Result.success(basicUser);
-//    }
 
     /**
      * 修改用户信息

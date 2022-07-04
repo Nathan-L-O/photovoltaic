@@ -355,6 +355,5 @@ public class VerificationCodeUtil {
                 }
             }
         }
-
     }
 }

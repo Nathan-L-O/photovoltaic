@@ -135,6 +135,9 @@ public class UserServiceImpl implements UserService {
         verificationCodeUtil.initRegisterSmsCode(request.getUsername());
     }
 
+    /**
+     * 注册用户的时候顺便将用户的信息创建一条
+     */
     @Override
     public void smsRegisterAction(UserBaseRequest request) {
         VerificationCodeUtil.validate(request.getUsername(),request.getCode());
@@ -149,7 +152,6 @@ public class UserServiceImpl implements UserService {
 
         UserInfo userInfo = new UserInfo();
         userInfo.setUserId(user.getUserId());
-        userInfo.setUserInfoId(UUIDUtil.generate(false));
         userInfo.setMobilePhone(user.getUsername());
         userInfoMapper.insert(userInfo);
 
