@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,8 +23,11 @@ import java.util.*;
 
 public class ReadExcelUtils {
 
-    //TODO
-    private static String filePath = "http://";
+    @Value("${image.ImageIp}")
+    private static String Ip;
+
+    @Value("${image.url}")
+    private static String url;
 
     private static Map<PicturePosition, String> pictureMap;
     public static List readExcel(MultipartFile file) throws Exception {
@@ -216,13 +220,12 @@ public class ReadExcelUtils {
         try {
             String ext = pic.suggestFileExtension(); //图片格式
             String filename = UUID.randomUUID().toString();
-//            String filePath = "E:\\pic\\pic" + filename + "." + ext;
-            String filePath = "D:\\javaProject\\photovoltaic\\pic\\pic" + filename + "." + ext;
+            String filePath = System.getProperty("user.dir")+url+"pic" + filename + "." + ext;
             byte[] data = pic.getData();
             FileOutputStream out = new FileOutputStream(filePath);
             out.write(data);
             out.close();
-            return "http://192.168.3.8:8083/pic/pic" + filename + "." + ext;
+            return Ip + "/pic" + filename + "." + ext;
         } catch (Exception e) {
             return "";
         }

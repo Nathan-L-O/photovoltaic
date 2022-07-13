@@ -5,11 +5,12 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/photovoltaic?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: root
-    password: 19991213
+    url: jdbc:mysql://124.71.161.213:3306/photovoltaic?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+#    username: root
 #    password: 1qaz2wsx
 #    password: 123456
+    username: photovoltaic
+    password: xrXAaaCpMCd5CiMP
     hikari:
       auto-commit: true
       #空闲连接超时时长
@@ -48,13 +49,21 @@ mengtu:
 
 #用户头像图片存储地址,末尾要以"/"结尾
 user:
-  headImage: D:/javaProject/photovoltaic/pic/user/
-  headImageIp: http://192.168.3.8:8083/pic/user/
+#  headImage: D:/javaProject/photovoltaic/pic/user/
+  headImage: /pic/user/
+#  headImageIp: http://192.168.3.8:8083/pic/user/
+  headImageIp: http://photovoltaic.mtiland.com/pic/user/
 #验证码存储路径,末尾要以"/"结尾
 code:
-  path: D:/javaProject/photovoltaic/code
+#  path: D:/javaProject/photovoltaic/code
+  path: /code
 #读取图片路径
 image:
-  url: D:\javaProject\photovoltaic\pic
+#  ImageIp: http://192.168.3.8:8083/pic
+  ImageIp: http://photovoltaic.mtiland.com/pic
+#  url: D:\javaProject\photovoltaic\pic
+  url: /pic/
+
+#  /www/wwwroot/photovoltaic/pic/
 
 

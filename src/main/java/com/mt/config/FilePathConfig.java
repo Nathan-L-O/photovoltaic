@@ -11,7 +11,7 @@ public class FilePathConfig implements WebMvcConfigurer {
     private String FilePath;
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("**/pic/**") //虚拟url路径
-                .addResourceLocations("file:"+FilePath); //真实本地路径
+        registry.addResourceHandler("/pic/**") //虚拟url路径
+                .addResourceLocations("file:"+System.getProperty("user.dir")+"/pic/");//真实本地路径
     }
 }

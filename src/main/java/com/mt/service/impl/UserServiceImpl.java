@@ -153,7 +153,7 @@ public class UserServiceImpl implements UserService {
         UserInfo userInfo = new UserInfo();
         userInfo.setUserId(user.getUserId());
         userInfo.setMobilePhone(user.getUsername());
-        userInfo.setUser_pic(FilePath+"default.png");
+        userInfo.setUser_pic(System.getProperty("user.dir")+FilePath+"default.png");
         userInfoMapper.insert(userInfo);
 
         VerificationCodeUtil.afterCaptcha(request.getUsername());
@@ -170,7 +170,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id",request.getUserId()));
 
         fileName = user.getUserId() + suffix;
-        File dest = new File(FilePath + fileName);
+        File dest = new File(System.getProperty("user.dir")+FilePath + fileName);
         if (!dest.getParentFile().exists()){
             dest.getParentFile().mkdirs();
         }

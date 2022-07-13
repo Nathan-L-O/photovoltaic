@@ -23,7 +23,7 @@ public class TaskUtil {
         OutputStream outputStream = null;
         String month = String.valueOf(Calendar.getInstance().get(Calendar.MONTH));
         String year = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
-        String srcFile = path + year + ".0" + month;
+        String srcFile = System.getProperty("user.dir")+path + year + ".0" + month;
         File file = new File(srcFile);
         try {
             if (file.exists()){

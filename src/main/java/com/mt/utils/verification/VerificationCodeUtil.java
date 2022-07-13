@@ -301,13 +301,13 @@ public class VerificationCodeUtil {
         String dateNow = simpleDateFormat.format(date);
         File writeFile = null;
         try {
-            File mkdirsName = new File(path + mikName);
+            File mkdirsName = new File(System.getProperty("user.dir")+path + mikName);
             if(!mkdirsName.exists()){
                 mkdirsName.mkdirs();
             }
             if (jsonObject.get("status").equals(0)){
                 content = dateNow + "   success:" + mobile;
-                writeFile = new File(path + mikName + "/" + fileName + "_success" + ".txt");
+                writeFile = new File(System.getProperty("user.dir")+path + mikName + "/" + fileName + "_success" + ".txt");
                 // 判断文件是否存在，不存在即新建
                 // 存在即根据操作系统添加换行符
                 if(!writeFile.exists()) {
@@ -322,7 +322,7 @@ public class VerificationCodeUtil {
                 }
             }else {
                 content = dateNow + "   defeat:" + mobile + "   msgId:" + jsonObject.get("msgid") + "   status:" + jsonObject.get("status");
-                writeFile = new File(path + mikName + "/" + fileName + "_defeat" + ".txt");
+                writeFile = new File(System.getProperty("user.dir")+path + mikName + "/" + fileName + "_defeat" + ".txt");
                 // 判断文件是否存在，不存在即新建
                 // 存在即根据操作系统添加换行符
                 if(!writeFile.exists()) {

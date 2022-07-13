@@ -22,6 +22,7 @@ import com.mt.utils.verification.VerificationCodeUtil;
 import com.mt.vo.FormVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -41,6 +42,9 @@ public class ProgrammeServiceImpl implements ProgrammeService {
 
     @Autowired
     private BatteryMapper batteryMapper;
+
+    @Value("${image.ImageIp}")
+    private String Ip;
 
     @Override
     public Map<String, Object> selectProgrammeDetails(Integer programme_id) {
@@ -109,6 +113,7 @@ public class ProgrammeServiceImpl implements ProgrammeService {
         battery_cluster.put("品牌","海基");
         battery_cluster.put("型号",batteryType == BatteryType.MODULE_TYPE_1C ? "1C":"0.5C");
         battery_cluster.put("数量",batteryNum);
+        battery_cluster.put("图片",Ip+"/"+(batteryType == BatteryType.MODULE_TYPE_1C ? "1C":"0.5C")+"/"+batteryNum+".png");
         battery_cluster.put("最大尺寸",batteryType == BatteryType.MODULE_TYPE_1C ? "551*728*2250mm":"1086*733*2250mm");
         battery_cluster.put("重量",batteryType == BatteryType.MODULE_TYPE_1C ? 1200-(85*(9-batteryNum))+"kg":2000-(85*(19-batteryNum))+"kg");
         battery_cluster.put("标称能量",String.format("%.2f",9.216*batteryNum)+"kWh");
