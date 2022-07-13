@@ -217,12 +217,12 @@ public class ReadExcelUtils {
             String ext = pic.suggestFileExtension(); //图片格式
             String filename = UUID.randomUUID().toString();
 //            String filePath = "E:\\pic\\pic" + filename + "." + ext;
-            String filePath = "D:\\pic\\pic" + filename + "." + ext;
+            String filePath = "D:\\javaProject\\photovoltaic\\pic\\pic" + filename + "." + ext;
             byte[] data = pic.getData();
             FileOutputStream out = new FileOutputStream(filePath);
             out.write(data);
             out.close();
-            return "http://localhost:8083/pic/pic" + filename + "." + ext;
+            return "http://192.168.3.8:8083/pic/pic" + filename + "." + ext;
         } catch (Exception e) {
             return "";
         }

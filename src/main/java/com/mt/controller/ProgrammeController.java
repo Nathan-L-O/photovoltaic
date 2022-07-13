@@ -67,7 +67,7 @@ public class ProgrammeController {
         try {
             List<Programme> programmes = new ArrayList<>();
             programmes = programmeMapper.selectList(new QueryWrapper<Programme>()
-                       .eq("user_id",userBaseRequest.getUserId())
+                    .eq("user_id",userBaseRequest.getUserId())
                     .eq("isDelete",1));
             return Result.success(selectState(programmes));
         }catch (Exception e){
@@ -117,6 +117,7 @@ public class ProgrammeController {
             programme.setIsCollection(0);
             programme.setIsDelete(0);
             programme.setCreate_date(new Date());
+            programme.setPriceUnit("￥");
             int flag = programmeMapper.insert(programme);
             if (1 == flag) {
                 Inverter inverter = inverterMapper.selectById(String.valueOf(programme.getInverter_id()));
@@ -257,6 +258,20 @@ public class ProgrammeController {
             return Result.fail(e.getMessage());
         }
     }
+
+    @ApiOperation(value="修改方案状态")
+    @RequestMapping(value = "updatePriceUnit", method = RequestMethod.POST)
+    public Result<Object> updatePriceUnit(
+            @RequestBody Programme programme) {
+        try {
+            programmeMapper.update(null,new UpdateWrapper<Programme>().set("priceUnit",programme.getPriceUnit()).eq("programme_id",programme.getProgramme_id()));
+            return Result.success("更新成功");
+        }catch (Exception e){
+            return Result.fail(e.getMessage());
+        }
+    }
+
+
 
     @ApiOperation(value="复制")
     @RequestMapping(value = "copy", method = RequestMethod.POST)

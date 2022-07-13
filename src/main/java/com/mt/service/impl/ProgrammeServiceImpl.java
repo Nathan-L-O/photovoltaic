@@ -50,7 +50,6 @@ public class ProgrammeServiceImpl implements ProgrammeService {
         Battery battery = new Battery();
         Inverter inverter = new Inverter();
         Programme programme = programmeMapper.selectById(programme_id);
-        returnMap.put("programme",programme);
         List<Form> forms = formMapper.selectList(new QueryWrapper<Form>().eq("programme_id",programme_id));
         for (Form f : forms) {
             //每个架子的电池数量
@@ -79,6 +78,8 @@ public class ProgrammeServiceImpl implements ProgrammeService {
                 map.put("battery_cluster",JSON.toJSONString(battery_cluster));
                 map.put("battery",battery);
                 map.put("inverter",inverter);
+                programme.setInverter_type(inverter.getInverter_type());
+                returnMap.put("programme",programme);
                 if (f.getChose() == 1){
                     returnMap.put("Enable",map);
                 }else if (f.getChose() == 0) {

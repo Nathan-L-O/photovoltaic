@@ -62,7 +62,13 @@ public class Programme {
     @ApiModelProperty(value="逆变器数量",name="inverter_num")
     private String inverter_num;
 
+    @ApiModelProperty(value="价格单位",name="priceUnit")
+    private String priceUnit;
+
     @TableField(exist = false)
     private State state;
+
+    @TableField(exist = false)
+    private String inverter_type;
 
 }

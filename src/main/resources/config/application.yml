@@ -48,9 +48,13 @@ mengtu:
 
 #用户头像图片存储地址,末尾要以"/"结尾
 user:
-  headImage: D:/pic/user/
+  headImage: D:/javaProject/photovoltaic/pic/user/
   headImageIp: http://192.168.3.8:8083/pic/user/
 #验证码存储路径,末尾要以"/"结尾
 code:
-  path: D:/code/
+  path: D:/javaProject/photovoltaic/code
+#读取图片路径
+image:
+  url: D:\javaProject\photovoltaic\pic
+
 

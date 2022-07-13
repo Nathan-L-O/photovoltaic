@@ -153,6 +153,7 @@ public class UserServiceImpl implements UserService {
         UserInfo userInfo = new UserInfo();
         userInfo.setUserId(user.getUserId());
         userInfo.setMobilePhone(user.getUsername());
+        userInfo.setUser_pic(FilePath+"default.png");
         userInfoMapper.insert(userInfo);
 
         VerificationCodeUtil.afterCaptcha(request.getUsername());

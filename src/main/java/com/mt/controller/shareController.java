@@ -1,11 +1,19 @@
 package com.mt.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.mt.common.annotation.LoginAuthentication;
+import com.mt.mapper.UserInfoMapper;
+import com.mt.pojo.user.UserInfo;
+import com.mt.request.UserBaseRequest;
 import com.mt.service.ProgrammeService;
 import com.mt.utils.HashUtil;
 import com.mt.utils.Result;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.util.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +36,8 @@ public class shareController {
 
     @Resource
     ProgrammeService programmeService;
+    @Autowired
+    private UserInfoMapper userInfoMapper;
 
     private static final Integer SALT_LENGTH = 12;
 
@@ -51,10 +61,14 @@ public class shareController {
             byte[] base64decodedBytes = Base64.getDecoder().decode(moduleName);
             String JM = HashUtil.decrypt(new String(base64decodedBytes, "utf-8"),PASSWORD);
             String str = StringUtils.substring(JM,SALT_LENGTH);
-            String programme_id = StringUtils.substringBefore(str,"~");
-            String rang = StringUtils.substringAfter(str,"~");
-            Map<String,Object> map = programmeService.selectProgrammeDetails(Integer.valueOf(programme_id));
-            map.put("range",rang);
+            String json = StringUtils.substringAfter(str,"~");
+            JSONObject jsonObject = JSONObject.parseObject(json);
+            Map<String,Object> map = new HashMap<>();
+            map.put("user",userInfoMapper.selectOne(new QueryWrapper<UserInfo>().eq("user_id",jsonObject.get("user_id"))));
+            if (jsonObject.get("range") != null)
+                map.put("range",jsonObject.get("range"));
+            if (jsonObject.get("programmer_id") != null)
+                map.put("programme",programmeService.selectProgrammeDetails((Integer) jsonObject.get("programmer_id")));
             return Result.success(map);
         }catch (Exception e){
             return Result.fail("解析失败");
@@ -64,11 +78,18 @@ public class shareController {
     }
 
     @RequestMapping(value = "getURL",method = RequestMethod.POST)
-    public Result getURL(Integer programmer_id,String range) {
+    @LoginAuthentication
+    public Result getURL(Integer programmer_id,String range,HttpServletRequest httpServletRequest, UserBaseRequest userBaseRequest) {
         try {
             String url = "";
             String random = RandomStringUtils.randomNumeric(SALT_LENGTH);
-            String saltId = random + programmer_id +"~"+ range;
+            Map<String,Object> map = new HashMap<>();
+            if (programmer_id != null)
+                map.put("programmer_id",programmer_id);
+            if(range != null && range.length() != 0)
+                map.put("range",range);
+            map.put("user_id",userBaseRequest.getUserId());
+            String saltId = random +"~"+JSONObject.toJSONString(map);
             url = HashUtil.encrypt(saltId.getBytes(),PASSWORD);
 
             return Result.success(Base64.getUrlEncoder().encodeToString(url.getBytes("utf-8")));

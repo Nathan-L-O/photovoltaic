@@ -48,49 +48,11 @@ public class InverterController {
     @RequestMapping(value = "getAll", method = RequestMethod.GET)
     public Result getAll() {
         try{
-            List<Inverter> list = inverterMapper.selectList(new QueryWrapper<Inverter>().eq("inverter_type",1));
+            List<Inverter> list = inverterMapper.selectList(null);
             return Result.success(list);
         }catch (Exception e){
             return Result.fail(e.getMessage());
         }
     }
-
-//    @ApiOperation(value="（新建方案）根据逆变器以及发电量获得方案")
-//    @RequestMapping(value = "getCapacity", method = RequestMethod.GET)
-//    public Result<Object> getCapacity(
-//            @ApiParam(value="逆变器id") Integer inverter_id,
-//            @ApiParam(value="需求发电量") String capacity,
-//            @ApiParam(value="逆变器数量") Integer inverter_num) {
-//        try{
-//            Inverter inverter = inverterMapper.selectById(inverter_id);
-//            Map<String,Form> map = CalculationUtils.getGeneratingCapacity(inverter,capacity,inverter_num);
-//            List<Form> list = new ArrayList<>();
-//            if (map.get("practical")!=null){
-//                Form form = map.get("practical");
-//                formMapper.insert(form);
-//                list.add(form);
-//            }
-//            if (map.get("economic")!=null){
-//                Form form = map.get("economic");
-//                formMapper.insert(form);
-//                list.add(form);
-//            }
-//            if (list.size()==2){
-//                //输出的第一个为实际发电量-需求发电量最小的方案
-//                Collections.sort(list, Comparator.comparingInt(o -> (int) (Double.parseDouble(o.getDemand_capacity()) - Double.parseDouble(o.getActual_capacity()))));
-//                //如果第一个方案超出逆变器电压范围则将第二个方案设置为最优
-//                if (list.get(0).getErrmsg() != null && list.get(1).getErrmsg() == null){
-//                    Form form = list.get(1);
-//                    list.set(1,list.get(0));
-//                    list.set(0,form);
-//                }
-//            }
-//            return Result.success(list);
-//        }catch (Exception e){
-//            return Result.fail(e.getMessage());
-//        }
-//    }
-
-
 
 }
