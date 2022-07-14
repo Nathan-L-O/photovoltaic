@@ -16,18 +16,34 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+@Component
 public class ReadExcelUtils {
 
-    @Value("${image.ImageIp}")
     private static String Ip;
 
+    private static String Url;
+
+    @Value("${image.ImageIp}")
+    public String ip;
+
+    @PostConstruct
+    public void initIp(){
+        Ip = ip;
+    }
+
     @Value("${image.url}")
-    private static String url;
+    public String url;
+
+    @PostConstruct
+    public void initUrl(){
+        Url = url;
+    }
 
     private static Map<PicturePosition, String> pictureMap;
     public static List readExcel(MultipartFile file) throws Exception {
@@ -220,7 +236,8 @@ public class ReadExcelUtils {
         try {
             String ext = pic.suggestFileExtension(); //图片格式
             String filename = UUID.randomUUID().toString();
-            String filePath = System.getProperty("user.dir")+url+"pic" + filename + "." + ext;
+            String filePath = System.getProperty("user.dir")+Url+"pic" + filename + "." + ext;
+            System.out.println(filePath);
             byte[] data = pic.getData();
             FileOutputStream out = new FileOutputStream(filePath);
             out.write(data);
