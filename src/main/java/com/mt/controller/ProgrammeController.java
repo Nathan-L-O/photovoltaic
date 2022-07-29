@@ -147,7 +147,6 @@ public class ProgrammeController {
     }
 
     @ApiOperation(value="更新方案")
-    @LoginAuthentication
     @RequestMapping(value = "update", method = RequestMethod.POST)
     public Result<Object> update(
             @RequestBody Programme programme) {
@@ -218,7 +217,7 @@ public class ProgrammeController {
         try {
             int flag = programmeMapper.deleteById(programme.getProgramme_id());
             if (flag == 1){
-                return Result.success("删除成功");
+                return Result.success("文件已永久删除！");
             }
             return null;
         }catch (Exception e){
@@ -283,7 +282,7 @@ public class ProgrammeController {
             program.setProgramme_id(null);
             program.setUpdate_date(new Date());
             program.setCreate_date(new Date());
-            program.setProgramme_name(programme.getProgramme_name()+"的副本");
+            program.setProgramme_name(programme.getProgramme_name()+"-副本");
             int p = programmeMapper.insert(program);
             Boolean flag = true;
             for (Form form : forms) {

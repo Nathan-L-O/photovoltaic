@@ -69,13 +69,13 @@ public class ProgrammeServiceImpl implements ProgrammeService {
                                 .eq("inverter_name", StringUtils.substring(formvo.getName(),3)));
                     }
                     if (formvo.getName().contains("电池模组")){
-                        battery_nums = formvo.getNum();
+                        battery_nums = Integer.parseInt(formvo.getNum());
                         battery = batteryMapper.selectOne(new QueryWrapper<Battery>()
                                 .eq("battery_name", Objects.equals(formvo.getName(), "电池模组 1C") ? "HJESLFP-76120" : "HJESLFP-38240"));
                     }
                     if (formvo.getName().contains("支架")){
                         if (battery_nums != null)
-                        battery_nums = battery_nums/formvo.getNum();
+                        battery_nums = battery_nums/Integer.parseInt(formvo.getNum());
                     }
                 }
                 battery_cluster = getBatteryCluster(battery_nums,battery_cluster,battery);

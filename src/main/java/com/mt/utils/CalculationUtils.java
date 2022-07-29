@@ -106,50 +106,50 @@ public class CalculationUtils {
         if (practical.getCapacity() != null){
             List<FormVo> formVo = new ArrayList<>();
             double form_id = 1.0;
-            formVo.add(new FormVo(true,form_id,"逆变器"+inverter.getInverter_name(),inverter_num,"","",null,false,false,null));
+            formVo.add(new FormVo(true,form_id,"逆变器"+inverter.getInverter_name(),String.valueOf(inverter_num),"","",null,false,false,null));
             if (inverter_num > 1)
-                formVo.add(new FormVo(true,++form_id,"汇流柜",1,"","",null,false,false,null));
+                formVo.add(new FormVo(true,++form_id,"汇流柜","1","","",null,false,false,null));
             if (null != map.get("隔离变压器")){
-                formVo.add(new FormVo(true,++form_id,"隔离变压器",1,"","",null,false,false,null));
+                formVo.add(new FormVo(true,++form_id,"隔离变压器","1","","",null,false,false,null));
             }
             if (BatteryType.MODULE_TYPE_1C == batteryType){
-                formVo.add(new FormVo(true,++form_id,"电池模组 1C",practical.getBattery_number(),"","",null,false,false,null));
+                formVo.add(new FormVo(true,++form_id,"电池模组 1C",String.valueOf(practical.getBattery_number()),"","",null,false,false,null));
             }else {
-                formVo.add(new FormVo(true,++form_id,"电池模组 0.5C",practical.getBattery_number(),"","",null,false,false,null));
+                formVo.add(new FormVo(true,++form_id,"电池模组 0.5C",String.valueOf(practical.getBattery_number()),"","",null,false,false,null));
             }
-            formVo.add(new FormVo(true,++form_id,"支架",practical.getBracket_number(),"","",null,false,false,null));
-            formVo.add(new FormVo(true,++form_id,"高压盒",practical.getBracket_number(),"","",null,false,false,null));
-            formVo.add(new FormVo(true,++form_id,"BMS操作系统",1,"","",null,false,false,null));
-            formVo.add(new FormVo(false,++form_id,"20尺集装箱",1,"","",null,true,true,new String[]{"20尺集装箱","40尺集装箱","45尺集装箱"}));
+            formVo.add(new FormVo(true,++form_id,"支架",String.valueOf(practical.getBracket_number()),"","",null,false,false,null));
+            formVo.add(new FormVo(true,++form_id,"高压盒",String.valueOf(practical.getBracket_number()),"","",null,false,false,null));
+            formVo.add(new FormVo(true,++form_id,"BMS操作系统","1","","",null,false,false,null));
+            formVo.add(new FormVo(false,++form_id,"20尺集装箱","1","","",null,true,true,new String[]{"20尺集装箱","40尺集装箱","45尺集装箱"}));
             formVo.add(new FormVo(null,form_id+0.1,"空调系统",null,"","",form_id,false,true,null));
             formVo.add(new FormVo(null,form_id+0.2,"消费系统",null,"","",form_id,false,true,null));
-            formVo.add(new FormVo(false,++form_id,"运输费用",1,"","",null,true,true,null));
-            formVo.add(new FormVo(false,++form_id,"测试安装",1,"","",null,true,true,null));
+            formVo.add(new FormVo(false,++form_id,"运输费用","1","","",null,true,true,null));
+            formVo.add(new FormVo(false,++form_id,"测试安装","1","","",null,true,true,null));
             forms.put("practical", new Form(JSON.toJSONString(formVo),capacity,practical.getCapacity(),practical.getErrmsg()));
         }
         if (economic.getCapacity() != null){
             List<FormVo> formVo = new ArrayList<>();
             double form_id = 1.0;
-            formVo.add(new FormVo(true,form_id,"逆变器"+inverter.getInverter_name(),inverter_num,"","",null,false,false,null));
+            formVo.add(new FormVo(true,form_id,"逆变器"+inverter.getInverter_name(),String.valueOf(inverter_num),"","",null,false,false,null));
             if (inverter_num > 1)
-                formVo.add(new FormVo(true,++form_id,"汇流柜",1,"","",null,false,false,null));
+                formVo.add(new FormVo(true,++form_id,"汇流柜","1","","",null,false,false,null));
             if (null != map.get("隔离变压器")){
-                formVo.add(new FormVo(true,++form_id,"隔离变压器",1,"","",null,false,false,null));
+                formVo.add(new FormVo(true,++form_id,"隔离变压器","1","","",null,false,false,null));
             }
             if (BatteryType.MODULE_TYPE_1C == batteryType){
-                formVo.add(new FormVo(true,++form_id,"电池模组 1C",economic.getBattery_number(),"","",null,false,false,null));
+                formVo.add(new FormVo(true,++form_id,"电池模组 1C",String.valueOf(economic.getBattery_number()),"","",null,false,false,null));
             }else {
-                formVo.add(new FormVo(true,++form_id,"电池模组 0.5C",economic.getBattery_number(),"","",null,false,false,null));
+                formVo.add(new FormVo(true,++form_id,"电池模组 0.5C",String.valueOf(economic.getBattery_number()),"","",null,false,false,null));
             }
-            formVo.add(new FormVo(true,++form_id,"支架",economic.getBracket_number(),"","",null,false,false,null));
-            formVo.add(new FormVo(true,++form_id,"高压盒",economic.getBracket_number(),"","",null,false,false,null));
+            formVo.add(new FormVo(true,++form_id,"支架",String.valueOf(economic.getBracket_number()),"","",null,false,false,null));
+            formVo.add(new FormVo(true,++form_id,"高压盒",String.valueOf(economic.getBracket_number()),"","",null,false,false,null));
 
-            formVo.add(new FormVo(true,++form_id,"BMS操作系统",1,"","",null,false,false,null));
-            formVo.add(new FormVo(false,++form_id,"20尺集装箱",1,"","",null,true,true,new String[]{"20尺集装箱","40尺集装箱","45尺集装箱"}));
+            formVo.add(new FormVo(true,++form_id,"BMS操作系统","1","","",null,false,false,null));
+            formVo.add(new FormVo(false,++form_id,"20尺集装箱","1","","",null,true,true,new String[]{"20尺集装箱","40尺集装箱","45尺集装箱"}));
             formVo.add(new FormVo(null,form_id+0.1,"空调系统",null,"","",form_id,false,true,null));
             formVo.add(new FormVo(null,form_id+0.2,"消费系统",null,"","",form_id,false,true,null));
-            formVo.add(new FormVo(false,++form_id,"运输费用",1,"","",null,true,true,null));
-            formVo.add(new FormVo(false,++form_id,"测试安装",1,"","",null,true,true,null));
+            formVo.add(new FormVo(false,++form_id,"运输费用","1","","",null,true,true,null));
+            formVo.add(new FormVo(false,++form_id,"测试安装","1","","",null,true,true,null));
             forms.put("economic", new Form(JSON.toJSONString(formVo),capacity,economic.getCapacity(),economic.getErrmsg()));
         }
 

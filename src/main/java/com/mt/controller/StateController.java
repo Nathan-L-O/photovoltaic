@@ -57,7 +57,7 @@ public class StateController {
     public Result getAll(HttpServletRequest httpServletRequest,UserBaseRequest userBaseRequest) {
         try{
             return Result.success(stateMapper.selectList(new QueryWrapper<State>()
-                    .eq("user_id",0)
+                    .eq("user_id","0")
                     .or().eq("user_id",userBaseRequest.getUserId())
                     ));
         }catch (Exception e){

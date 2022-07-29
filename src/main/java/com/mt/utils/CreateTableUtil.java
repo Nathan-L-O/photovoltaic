@@ -15,7 +15,7 @@ public class CreateTableUtil {
         Class.forName("com.mysql.cj.jdbc.Driver");//加载注册
 
         //一开始必须填一个已经存在的数据库
-        String url = "jdbc:mysql://localhost:3306/mysql?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT";
+        String url = "jdbc:mysql://192.168.3.8:3306/mysql?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT";
         Connection conn = DriverManager.getConnection(url, "root", "123456");//建立连接
 //        Connection conn = DriverManager.getConnection(url, "root", "1qaz2wsx");//建立连接
         Statement stat = conn.createStatement();

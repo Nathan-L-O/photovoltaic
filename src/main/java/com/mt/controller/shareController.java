@@ -58,11 +58,11 @@ public class shareController {
                 moduleName = md5Url;
             }
 
-            byte[] base64decodedBytes = Base64.getDecoder().decode(moduleName);
-            String JM = HashUtil.decrypt(new String(base64decodedBytes, "utf-8"),PASSWORD);
-            String str = StringUtils.substring(JM,SALT_LENGTH);
-            String json = StringUtils.substringAfter(str,"~");
-            JSONObject jsonObject = JSONObject.parseObject(json);
+//            byte[] base64decodedBytes = Base64.getDecoder().decode(moduleName);
+//            String JM = HashUtil.decrypt(new String(base64decodedBytes, "utf-8"),PASSWORD);
+//            String str = StringUtils.substring(JM,SALT_LENGTH);
+//            String json = StringUtils.substringAfter(str,"~");
+            JSONObject jsonObject = JSONObject.parseObject(moduleName);
             Map<String,Object> map = new HashMap<>();
             map.put("user",userInfoMapper.selectOne(new QueryWrapper<UserInfo>().eq("user_id",jsonObject.get("user_id"))));
             if (jsonObject.get("range") != null)
@@ -89,11 +89,12 @@ public class shareController {
             if(range != null && range.length() != 0)
                 map.put("range",range);
             map.put("user_id",userBaseRequest.getUserId());
-            String saltId = random +"~"+JSONObject.toJSONString(map);
-            url = HashUtil.encrypt(saltId.getBytes(),PASSWORD);
+//            String saltId = random +"~"+JSONObject.toJSONString(map);
+//            url = HashUtil.encrypt(saltId.getBytes(),PASSWORD);
 
-            return Result.success(Base64.getUrlEncoder().encodeToString(url.getBytes("utf-8")));
-        } catch (UnsupportedEncodingException e) {
+//            return Result.success(Base64.getUrlEncoder().encodeToString(url.getBytes("utf-8")));
+            return Result.success(JSONObject.toJSONString(map));
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;

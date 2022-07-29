@@ -2,7 +2,7 @@ package com.mt.utils;
 
 public enum BatteryType {
     MODULE_TYPE_0_5C(12,19),
-    MODULE_TYPE_1C(24, 10);
+    MODULE_TYPE_1C(24, 9);
 
     //验证上下限公式中的值
     private int name;

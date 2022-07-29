@@ -17,7 +17,7 @@ public class FormVo {
     private String name;
 
     @ApiModelProperty(value="数量")
-    private Integer num;
+    private String num;
 
     @ApiModelProperty(value="备注")
     private String remake;
@@ -38,7 +38,7 @@ public class FormVo {
     private String[] options;
 
 
-    public FormVo(Boolean select, Double id, String name, Integer num, String remake, String price, Double pid, Boolean required_input_num, Boolean required_select,String[] options) {
+    public FormVo(Boolean select, Double id, String name, String num, String remake, String price, Double pid, Boolean required_input_num, Boolean required_select,String[] options) {
         this.select = select;
         this.id = id;
         this.name = name;
